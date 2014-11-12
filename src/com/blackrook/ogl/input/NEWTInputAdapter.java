@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.blackrook.ogl.input;
 
-import com.blackrook.ogl.OGLInputAdapter;
 import com.blackrook.ogl.OGLSystem;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
@@ -20,8 +19,10 @@ import com.jogamp.newt.event.MouseListener;
  * in NEWT.
  * @author Matthew Tropiano
  */
-public class NEWTInputAdapter extends OGLInputAdapter implements MouseListener, KeyListener, OGLInputConstants
+public class NEWTInputAdapter implements MouseListener, KeyListener, OGLInputConstants
 {
+	/** Reference to target system. */
+	private OGLSystem system;
 	/** Previous mouse coordinates, X. */
 	private int prevMouseX;
 	/** Previous mouse coordinates, Y. */
@@ -32,7 +33,7 @@ public class NEWTInputAdapter extends OGLInputAdapter implements MouseListener, 
 	 */
 	public NEWTInputAdapter(OGLSystem system)
 	{
-		super(system);
+		this.system = system;
 		prevMouseX = -1;
 		prevMouseY = -1;
 	}
@@ -51,9 +52,21 @@ public class NEWTInputAdapter extends OGLInputAdapter implements MouseListener, 
 		prevMouseX = x;
 		prevMouseY = y;
 		
-		fireMouseMove(dx, x, dy, y);
+		system.sendMouseMovement(dx, x, dy, y);
 	}
 	
+	@Override
+	public void mouseEntered(MouseEvent e)
+	{
+		system.sendMouseEntered();
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e)
+	{
+		system.sendMouseExited();
+	}
+
 	@Override
 	public void mouseMoved(MouseEvent event)
 	{
@@ -78,13 +91,13 @@ public class NEWTInputAdapter extends OGLInputAdapter implements MouseListener, 
 		switch (b)
 		{
 			case MouseEvent.BUTTON1:
-				fireMousePress(MOUSE_LEFT);
+				system.sendMousePress(MOUSE_LEFT);
 				break;
 			case MouseEvent.BUTTON2:
-				fireMousePress(MOUSE_CENTER);
+				system.sendMousePress(MOUSE_CENTER);
 				break;
 			case MouseEvent.BUTTON3:
-				fireMousePress(MOUSE_RIGHT);
+				system.sendMousePress(MOUSE_RIGHT);
 				break;
 		}
 	}
@@ -96,34 +109,34 @@ public class NEWTInputAdapter extends OGLInputAdapter implements MouseListener, 
 		switch (b)
 		{
 			case MouseEvent.BUTTON1:
-				fireMouseRelease(MOUSE_LEFT);
+				system.sendMouseRelease(MOUSE_LEFT);
 				break;
 			case MouseEvent.BUTTON2:
-				fireMouseRelease(MOUSE_CENTER);
+				system.sendMouseRelease(MOUSE_CENTER);
 				break;
 			case MouseEvent.BUTTON3:
-				fireMouseRelease(MOUSE_RIGHT);
+				system.sendMouseRelease(MOUSE_RIGHT);
 				break;
 			case MouseEvent.BUTTON4:
-				fireMouseRelease(MOUSE_BACK);
+				system.sendMouseRelease(MOUSE_BACK);
 				break;
 			case MouseEvent.BUTTON5:
-				fireMouseRelease(MOUSE_FORWARD);
+				system.sendMouseRelease(MOUSE_FORWARD);
 				break;
 			case MouseEvent.BUTTON6:
-				fireMouseRelease(MouseEvent.BUTTON6);
+				system.sendMouseRelease(MOUSE_BUTTON6);
 				break;
 			case MouseEvent.BUTTON7:
-				fireMouseRelease(MouseEvent.BUTTON7);
+				system.sendMouseRelease(MOUSE_BUTTON7);
 				break;
 			case MouseEvent.BUTTON8:
-				fireMouseRelease(MouseEvent.BUTTON8);
+				system.sendMouseRelease(MOUSE_BUTTON8);
 				break;
 			case MouseEvent.BUTTON9:
-				fireMouseRelease(MouseEvent.BUTTON9);
+				system.sendMouseRelease(MOUSE_BUTTON9);
 				break;
 			default:
-				fireMouseRelease(MOUSE_UNDEFINED);
+				system.sendMouseRelease(MOUSE_UNDEFINED);
 				break;
 		}
 	}
@@ -131,40 +144,28 @@ public class NEWTInputAdapter extends OGLInputAdapter implements MouseListener, 
 	@Override
 	public void mouseWheelMoved(MouseEvent event)
 	{
-		fireMouseWheel(event.getWheelRotation());
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e)
-	{
-		fireMouseEntered();
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e)
-	{
-		fireMouseExited();
+		system.sendMouseWheel(event.getWheelRotation());
 	}
 
 	@Override
 	public void keyPressed(KeyEvent event)
 	{
 		// The input constants are equivalent to KEY_*, so, don't convert.
-		fireKeyPress(event.getKeyCode());
+		system.sendKeyPress(event.getKeyCode());
 	}
 
 	@Override
 	public void keyReleased(KeyEvent event)
 	{
 		// The input constants are equivalent to KEY_*, so, don't convert.
-		fireKeyRelease(event.getKeyCode());
+		system.sendKeyRelease(event.getKeyCode());
 	}
 
 	@Override
 	public void keyTyped(KeyEvent event)
 	{
 		// The input constants are equivalent to KEY_*, so, don't convert.
-		fireKeyTyped(event.getKeyCode());
+		system.sendKeyTyped(event.getKeyCode());
 	}
 
 }

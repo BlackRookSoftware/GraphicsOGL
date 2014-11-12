@@ -15,7 +15,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-import com.blackrook.ogl.OGLInputAdapter;
 import com.blackrook.ogl.OGLSystem;
 
 /**
@@ -24,9 +23,10 @@ import com.blackrook.ogl.OGLSystem;
  * in Swing.
  * @author Matthew Tropiano
  */
-public class SwingInputAdapter extends OGLInputAdapter 
-	implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, OGLInputConstants
+public class SwingInputAdapter implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, OGLInputConstants
 {
+	/** Reference to target system. */
+	private OGLSystem system;
 	/** Previous mouse coordinates, X. */
 	private int prevMouseX;
 	/** Previous mouse coordinates, Y. */
@@ -37,7 +37,7 @@ public class SwingInputAdapter extends OGLInputAdapter
 	 */
 	public SwingInputAdapter(OGLSystem system)
 	{
-		super(system);
+		this.system = system;
 		prevMouseX = -1;
 		prevMouseY = -1;
 	}
@@ -56,7 +56,7 @@ public class SwingInputAdapter extends OGLInputAdapter
 		prevMouseX = x;
 		prevMouseY = y;
 		
-		fireMouseMove(dx, x, dy, y);
+		system.sendMouseMovement(dx, x, dy, y);
 	}
 	
 	@Override
@@ -83,13 +83,13 @@ public class SwingInputAdapter extends OGLInputAdapter
 		switch (b)
 		{
 			case MouseEvent.BUTTON1:
-				fireMousePress(MOUSE_LEFT);
+				system.sendMousePress(MOUSE_LEFT);
 				break;
 			case MouseEvent.BUTTON2:
-				fireMousePress(MOUSE_CENTER);
+				system.sendMousePress(MOUSE_CENTER);
 				break;
 			case MouseEvent.BUTTON3:
-				fireMousePress(MOUSE_RIGHT);
+				system.sendMousePress(MOUSE_RIGHT);
 				break;
 		}
 	}
@@ -101,16 +101,16 @@ public class SwingInputAdapter extends OGLInputAdapter
 		switch (b)
 		{
 			case MouseEvent.BUTTON1:
-				fireMouseRelease(MOUSE_LEFT);
+				system.sendMouseRelease(MOUSE_LEFT);
 				break;
 			case MouseEvent.BUTTON2:
-				fireMouseRelease(MOUSE_CENTER);
+				system.sendMouseRelease(MOUSE_CENTER);
 				break;
 			case MouseEvent.BUTTON3:
-				fireMouseRelease(MOUSE_RIGHT);
+				system.sendMouseRelease(MOUSE_RIGHT);
 				break;
 			default:
-				fireMouseRelease(MOUSE_UNDEFINED);
+				system.sendMouseRelease(MOUSE_UNDEFINED);
 				break;
 		}
 	}
@@ -118,40 +118,40 @@ public class SwingInputAdapter extends OGLInputAdapter
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent event)
 	{
-		fireMouseWheel(event.getWheelRotation());
+		system.sendMouseWheel(event.getWheelRotation());
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e)
 	{
-		fireMouseEntered();
+		system.sendMouseEntered();
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e)
 	{
-		fireMouseExited();
+		system.sendMouseExited();
 	}
 
 	@Override
 	public void keyPressed(KeyEvent event)
 	{
 		// The input constants are equivalent to KEY_*, so, don't convert.
-		fireKeyPress(event.getKeyCode());
+		system.sendKeyPress(event.getKeyCode());
 	}
 
 	@Override
 	public void keyReleased(KeyEvent event)
 	{
 		// The input constants are equivalent to KEY_*, so, don't convert.
-		fireKeyRelease(event.getKeyCode());
+		system.sendKeyRelease(event.getKeyCode());
 	}
 
 	@Override
 	public void keyTyped(KeyEvent event)
 	{
 		// The input constants are equivalent to KEY_*, so, don't convert.
-		fireKeyTyped(event.getKeyCode());
+		system.sendKeyTyped(event.getKeyCode());
 	}
 
 }

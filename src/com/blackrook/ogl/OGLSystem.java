@@ -11,6 +11,7 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 
 import com.blackrook.commons.list.List;
+import com.blackrook.ogl.input.OGLInputConstants;
 import com.blackrook.ogl.object.buffer.OGLBuffer;
 import com.blackrook.ogl.object.framebuffer.OGLFrameBuffer;
 import com.blackrook.ogl.object.framebuffer.OGLFrameRenderBuffer;
@@ -26,7 +27,7 @@ import com.blackrook.ogl.object.texture.OGLTexture;
  * gets called with the passed {@link GLAutoDrawable}.
  * @author Matthew Tropiano
  */
-public class OGLSystem
+public final class OGLSystem
 {
 	/** OpenGL graphics context. */
 	private OGLGraphics glGraphics;
@@ -202,9 +203,9 @@ public class OGLSystem
 	}
 
 	/**
-	 * Performs stuff on mouse movement.
+	 * Broadcasts mouse movement to the canvas nodes.
 	 */
-	void mouseMovement(int changeX, int positionX, int changeY, int positionY)
+	public void sendMouseMovement(int changeX, int positionX, int changeY, int positionY)
 	{
 		glMouseX = positionX;
 		glMouseY = positionY;
@@ -218,54 +219,9 @@ public class OGLSystem
 	}
 
 	/**
-	 * Broadcasts mouse button presses. 
-	 * @param mouseButton a mouse button constant in {@link OGLInputConstants}.
+	 * Broadcasts the mouse entering this canvas to the canvas nodes. 
 	 */
-	void mousePress(int mouseButton)
-	{
-		// goes backwards. last to be drawn is closest to the screen.
-		for (int i = canvasNodeList.size()-1; i >= 0; i--)
-		{
-			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
-			if (listener != null && listener.isEnabled() && listener.glMousePress(mouseButton))
-				break;
-		}
-	}
-
-	/**
-	 * Broadcasts mouse button releases. 
-	 * @param mouseButton a mouse button constant in {@link OGLInputConstants}.
-	 */
-	void mouseRelease(int mouseButton)
-	{
-		// goes backwards. last to be drawn is closest to the screen.
-		for (int i = canvasNodeList.size()-1; i >= 0; i--)
-		{
-			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
-			if (listener != null && listener.isEnabled() && listener.glMouseRelease(mouseButton))
-				break;
-		}
-	}
-
-	/**
-	 * Broadcasts mouse wheel movements. 
-	 * @param units the amount of mouse wheel movement.
-	 */
-	void mouseWheel(int units)
-	{
-		// goes backwards. last to be drawn is closest to the screen.
-		for (int i = canvasNodeList.size()-1; i >= 0; i--)
-		{
-			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
-			if (listener != null && listener.isEnabled() && listener.glMouseWheel(units))
-				break;
-		}
-	}
-
-	/**
-	 * Broadcasts the mouse entering this canvas. 
-	 */
-	void mouseEntered()
+	public void sendMouseEntered()
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
@@ -277,9 +233,9 @@ public class OGLSystem
 	}
 
 	/**
-	 * Broadcasts the mouse exiting this canvas. 
+	 * Broadcasts the mouse exiting this canvas to the canvas nodes. 
 	 */
-	void mouseExited()
+	public void sendMouseExited()
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
@@ -291,114 +247,179 @@ public class OGLSystem
 	}
 
 	/**
-	 * Broadcasts key presses. 
-	 * @param keyCode the key constant to broadcast to reflect the pressed key (see {@link OGLInputConstants}).
+	 * Broadcasts mouse button presses to the canvas nodes. 
+	 * @param mouseButton a mouse button constant in {@link OGLInputConstants}.
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
 	 */
-	void keyPress(int keyCode)
+	public boolean sendMousePress(int mouseButton)
+	{
+		// goes backwards. last to be drawn is closest to the screen.
+		for (int i = canvasNodeList.size()-1; i >= 0; i--)
+		{
+			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
+			if (listener != null && listener.isEnabled() && listener.glMousePress(mouseButton))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Broadcasts mouse button releases to the canvas nodes. 
+	 * @param mouseButton a mouse button constant in {@link OGLInputConstants}.
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
+	 */
+	public boolean sendMouseRelease(int mouseButton)
+	{
+		// goes backwards. last to be drawn is closest to the screen.
+		for (int i = canvasNodeList.size()-1; i >= 0; i--)
+		{
+			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
+			if (listener != null && listener.isEnabled() && listener.glMouseRelease(mouseButton))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Broadcasts mouse wheel movements to the canvas nodes. 
+	 * @param units the amount of mouse wheel movement.
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
+	 */
+	public boolean sendMouseWheel(int units)
+	{
+		// goes backwards. last to be drawn is closest to the screen.
+		for (int i = canvasNodeList.size()-1; i >= 0; i--)
+		{
+			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
+			if (listener != null && listener.isEnabled() && listener.glMouseWheel(units))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Broadcasts key presses to the canvas nodes. 
+	 * @param keyCode the key constant to broadcast to reflect the pressed key (see {@link OGLInputConstants}).
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
+	 */
+	public boolean sendKeyPress(int keyCode)
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
 		{
 			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
 			if (listener != null && listener.isEnabled() && listener.glKeyPress(keyCode))
-				break;
+				return true;
 		}
+		return false;
 	}
 
 	/**
-	 * Broadcasts key releases. 
+	 * Broadcasts key releases to the canvas nodes. 
 	 * @param keyCode the key constant to broadcast to reflect the released key (see {@link OGLInputConstants}).
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
 	 */
-	void keyRelease(int keyCode)
+	public boolean sendKeyRelease(int keyCode)
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
 		{
 			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
 			if (listener != null && listener.isEnabled() && listener.glKeyRelease(keyCode))
-				break;
+				return true;
 		}
+		return false;
 	}
 
 	/**
-	 * Broadcasts key typing. 
+	 * Broadcasts key typing to the canvas nodes. 
 	 * @param keyCode the key constant to broadcast to reflect the typed key (see {@link OGLInputConstants}).
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
 	 */
-	void keyTyped(int keyCode)
+	public boolean sendKeyTyped(int keyCode)
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
 		{
 			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
 			if (listener != null && listener.isEnabled() && listener.glKeyTyped(keyCode))
-				break;
+				return true;
 		}
+		return false;
 	}
 
 	/**
-	 * Broadcasts a button press from a gamepad.
+	 * Broadcasts a button press from a gamepad to the canvas nodes.
 	 * @param gamepadId the id of the gamepad.
 	 * @param gamepadButton the gamepad button pressed.
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
 	 */
-	void gamepadPress(int gamepadId, int gamepadButton)
+	public boolean sendGamepadPress(int gamepadId, int gamepadButton)
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
 		{
 			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
 			if (listener != null && listener.isEnabled() && listener.glGamepadPress(gamepadId, gamepadButton))
-				break;
+				return true;
 		}
+		return false;
 	}
 	
 	/**
-	 * Broadcasts a button release from a gamepad.
+	 * Broadcasts a button release from a gamepad to the canvas nodes.
 	 * @param gamepadId the id of the gamepad.
 	 * @param gamepadButton the gamepad button released.
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
 	 */
-	void gamepadRelease(int gamepadId, int gamepadButton)
+	public boolean sendGamepadRelease(int gamepadId, int gamepadButton)
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
 		{
 			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
 			if (listener != null && listener.isEnabled() && listener.glGamepadRelease(gamepadId, gamepadButton))
-				break;
+				return true;
 		}
+		return false;
 	}
 	
 	/**
-	 * Broadcasts an axis change from a gamepad.
+	 * Broadcasts an axis change from a gamepad to the canvas nodes.
 	 * @param gamepadId the id of the gamepad.
 	 * @param gamepadAxisId the gamepad axis that changed.
 	 * @param value the gamepad axis value.
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
 	 */
-	void gamepadAxis(int gamepadId, int gamepadAxisId, float value)
+	public boolean sendGamepadAxis(int gamepadId, int gamepadAxisId, float value)
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
 		{
 			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
 			if (listener != null && listener.isEnabled() && listener.glGamepadAxisChange(gamepadId, gamepadAxisId, value))
-				break;
+				return true;
 		}
+		return false;
 	}
 	
 	/**
-	 * Broadcasts an axis tap from a gamepad.
+	 * Broadcasts an axis tap from a gamepad to the canvas nodes.
 	 * @param gamepadId the id of the gamepad.
 	 * @param gamepadAxisId the gamepad axis that changed.
 	 * @param positive if true, positive value, if false, negative.
+	 * @return true if this input was handled by this system, false if not (so that others can, if necessary).
 	 */
-	void gamepadAxisTap(int gamepadId, int gamepadAxisId, boolean positive)
+	public boolean sendGamepadAxisTap(int gamepadId, int gamepadAxisId, boolean positive)
 	{
 		// goes backwards. last to be drawn is closest to the screen.
 		for (int i = canvasNodeList.size()-1; i >= 0; i--)
 		{
 			OGLCanvasNode listener = canvasNodeList.getByIndex(i);
 			if (listener != null && listener.isEnabled() && listener.glGamepadAxisTap(gamepadId, gamepadAxisId, positive))
-				break;
+				return true;
 		}
+		return false;
 	}
 	
 }

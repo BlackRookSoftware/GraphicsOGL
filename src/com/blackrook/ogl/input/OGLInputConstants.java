@@ -405,6 +405,20 @@ public interface OGLInputConstants
 	public static final int MOUSE_BACK = 4;
 	/** Mouse button constant for the FORWARD button. */
 	public static final int MOUSE_FORWARD = 5;
+	/** Mouse button constant for the 6th button. */
+	public static final int MOUSE_BUTTON6 = 6;
+	/** Mouse button constant for the 7th button. */
+	public static final int MOUSE_BUTTON7 = 7;
+	/** Mouse button constant for the 8th button. */
+	public static final int MOUSE_BUTTON8 = 8;
+	/** Mouse button constant for the 9th button. */
+	public static final int MOUSE_BUTTON9 = 9;
+	/** Mouse button constant for the 10th button. */
+	public static final int MOUSE_BUTTON10 = 10;
+	/** Mouse button constant for the 11th button. */
+	public static final int MOUSE_BUTTON11 = 11;
+	/** Mouse button constant for the 12th button. */
+	public static final int MOUSE_BUTTON12 = 12;
 	
 	/** Gamepad axis type: Undefined axis. */
 	public static final int AXIS_UNDEFINED = 0;
