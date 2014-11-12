@@ -1,7 +1,7 @@
 # Black Rook OpenGL
 
 Copyright (c) 2014 Black Rook Software. All rights reserved.  
-[http://blackrooksoftware.com/projects.htm?name=ogl](http://blackrooksoftware.com/projects.htm?name=ogl)  
+[http://blackrooksoftware.com/projects.htm?name=graphicsogl](http://blackrooksoftware.com/projects.htm?name=graphicsogl)  
 [https://github.com/BlackRookSoftware/GraphicsOGL](https://github.com/BlackRookSoftware/GraphicsOGL)
 
 ### NOTICE
