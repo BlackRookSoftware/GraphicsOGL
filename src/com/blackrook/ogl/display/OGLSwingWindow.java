@@ -250,7 +250,7 @@ public class OGLSwingWindow extends JFrame implements OGLDisplay, GLEventListene
 	 */
 	public OGLSwingWindow(String frameName, Image frameIcon, int width, int height, boolean fullScreen, boolean startVisible)
 	{
-		this(new OGLProfile(), frameName, frameIcon, width, height, false, true);
+		this(new OGLProfile(), frameName, frameIcon, width, height, fullScreen, true);
 	}
 
 	/**

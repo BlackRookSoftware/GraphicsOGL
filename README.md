@@ -14,7 +14,7 @@ may change many times in different ways over the course of its development!
 
 ### Required Libraries
 
-Black Rook Commons 2.16.0+  
+Black Rook Commons 2.20.0+  
 [https://github.com/BlackRookSoftware/Common](https://github.com/BlackRookSoftware/Common)
 
 Black Rook Common I/O 2.4.0+  
