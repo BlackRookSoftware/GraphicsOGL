@@ -40,7 +40,6 @@ public class OGLInitNode extends OGLTriggeredNode
 	private boolean vsyncEnabled;
 	/** Global Fill mode. */
 	private FillMode fillMode;
-	
 
 	/**
 	 * Creates a new init node.<br>
@@ -223,4 +222,13 @@ public class OGLInitNode extends OGLTriggeredNode
 	{
 		this.fillMode = fillMode;
 	}
+	
+	/**
+	 * Gets the global filling mode.
+	 */
+	public FillMode getFillMode()
+	{
+		return fillMode;
+	}
+	
 }
