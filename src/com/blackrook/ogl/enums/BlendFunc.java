@@ -14,9 +14,9 @@ package com.blackrook.ogl.enums;
 public enum BlendFunc
 {
 	ADDITIVE(BlendArg.SOURCE_ALPHA, BlendArg.ONE),
-	MULTIPLICATIVE(BlendArg.DEST_COLOR,BlendArg.ZERO),
+	MULTIPLICATIVE(BlendArg.DEST_COLOR, BlendArg.ZERO),
 	REPLACE(BlendArg.SOURCE_ALPHA, BlendArg.ZERO),
-	ALPHA(BlendArg.SOURCE_ALPHA,BlendArg.ONE_MINUS_SOURCE_ALPHA);
+	ALPHA(BlendArg.SOURCE_ALPHA, BlendArg.ONE_MINUS_SOURCE_ALPHA);
 	
 	public final BlendArg argsrc;
 	public final BlendArg argdst;

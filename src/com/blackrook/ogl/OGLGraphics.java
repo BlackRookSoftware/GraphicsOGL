@@ -1889,7 +1889,11 @@ public class OGLGraphics
 	 */
 	public void setTexGenEyePlane(TextureCoordType coord, float a, float b, float c, float d)
 	{
-		gl.glTexGenfv(coord.glValue, GL2.GL_EYE_PLANE, new float[]{a,b,c,d}, 0);
+		FLOAT_STATE[0] = a;
+		FLOAT_STATE[1] = b;
+		FLOAT_STATE[2] = c;
+		FLOAT_STATE[3] = d;
+		gl.glTexGenfv(coord.glValue, GL2.GL_EYE_PLANE, FLOAT_STATE, 0);
 	}
 
 	/**
@@ -1902,7 +1906,11 @@ public class OGLGraphics
 	 */
 	public void setTexGenObjectPlane(TextureCoordType coord, float a, float b, float c, float d)
 	{
-		gl.glTexGenfv(coord.glValue, GL2.GL_OBJECT_PLANE, new float[]{a,b,c,d}, 0);
+		FLOAT_STATE[0] = a;
+		FLOAT_STATE[1] = b;
+		FLOAT_STATE[2] = c;
+		FLOAT_STATE[3] = d;
+		gl.glTexGenfv(coord.glValue, GL2.GL_OBJECT_PLANE, FLOAT_STATE, 0);
 	}
 
 	/**

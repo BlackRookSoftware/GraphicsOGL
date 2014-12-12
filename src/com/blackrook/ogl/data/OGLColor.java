@@ -390,5 +390,22 @@ public class OGLColor
 		out.alpha = oma * a.alpha + b.alpha;
 	}
 	
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj instanceof OGLColor)
+			return this.equals((OGLColor)obj);
+		return super.equals(obj);
+	}
+
+	public boolean equals(OGLColor color)
+	{
+		return 
+			red == color.red
+			&& green == color.green
+			&& blue == color.blue
+			&& alpha == color.alpha
+		;
+	}
 	
 }
