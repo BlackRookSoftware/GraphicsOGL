@@ -10,7 +10,6 @@ import com.blackrook.ogl.object.buffer.OGLBuffer;
  */
 public final class OGLGeometryUtils
 {
-	
 	/**
 	 * Creates a vertex set directive.
 	 * @param dimensions the width in elements of this vertex set (dimensions).
@@ -84,11 +83,22 @@ public final class OGLGeometryUtils
 		buffer.unbindFrom(g);
 	}
 
+	/** Component type. */
+	public enum Component
+	{
+		VERTICES,
+		TEXCOORDS,
+		NORMALS,
+		COLORS;
+	}
+
 	/**
 	 * A directive that tells OGLGeometryUtils how to draw a buffer full of data.
 	 */
 	public abstract static class GeometryInfo
 	{
+		/** Component type. */
+		protected Component component;
 		/** Data size (width). */
 		protected int width;
 		/** Data stride. */
@@ -96,8 +106,9 @@ public final class OGLGeometryUtils
 		/** Data offset in a buffer. */
 		protected long offset;
 		
-		private GeometryInfo(int width, int stride, int offset)
+		private GeometryInfo(Component component, int width, int stride, int offset)
 		{
+			this.component = component;
 			this.width = width;
 			this.stride = stride;
 			this.offset = offset;
@@ -123,7 +134,7 @@ public final class OGLGeometryUtils
 	{
 		private VertexInfo(int width, int stride, int offset)
 		{
-			super(width, stride, offset);
+			super(Component.VERTICES, width, stride, offset);
 		}
 
 		@Override
@@ -149,7 +160,7 @@ public final class OGLGeometryUtils
 
 		private TexCoordInfo(int multiTexUnit, int width, int stride, int offset)
 		{
-			super(width, stride, offset);
+			super(Component.TEXCOORDS, width, stride, offset);
 			this.multiTexUnit = multiTexUnit;
 		}
 
@@ -175,7 +186,7 @@ public final class OGLGeometryUtils
 	{
 		private NormalInfo(int stride, int offset)
 		{
-			super(3, stride, offset);
+			super(Component.NORMALS, 3, stride, offset);
 		}
 
 		@Override
@@ -198,7 +209,7 @@ public final class OGLGeometryUtils
 	{
 		private ColorInfo(int width, int stride, int offset)
 		{
-			super(width, stride, offset);
+			super(Component.COLORS, width, stride, offset);
 		}
 
 		@Override
