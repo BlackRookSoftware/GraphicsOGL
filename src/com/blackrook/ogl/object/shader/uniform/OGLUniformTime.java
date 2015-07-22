@@ -16,7 +16,7 @@ import com.blackrook.ogl.object.shader.OGLShaderProgram;
  * wraps around in full seconds seamlessly.
  * Setting the value on this shader sets the time to a value. 
  * The value is always incrementing and changes each bind.
- * For this class, {@link #hasChanged()} always returns true.
+ * For this class, {@link #isChanged()} always returns true.
  * @author Matthew Tropiano
  */
 public class OGLUniformTime extends OGLUniformFloat
@@ -38,7 +38,7 @@ public class OGLUniformTime extends OGLUniformFloat
 	
 	/** Always returns true. */
 	@Override
-	public boolean hasChanged()
+	public boolean isChanged()
 	{
 		return true;
 	}

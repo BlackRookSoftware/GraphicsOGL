@@ -79,7 +79,7 @@ public abstract class OGLUniform
 	 * Returns true if the value of the uniform has changed
 	 * and should be updated at shader binding, false otherwise.
 	 */
-	public boolean hasChanged()
+	public boolean isChanged()
 	{
 		return changed;
 	}

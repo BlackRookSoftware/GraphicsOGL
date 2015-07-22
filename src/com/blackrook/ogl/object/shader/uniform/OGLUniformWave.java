@@ -51,7 +51,7 @@ public abstract class OGLUniformWave extends OGLUniform
 	 * Always returns true.
 	 */
 	@Override
-	public boolean hasChanged()
+	public boolean isChanged()
 	{
 		return true;
 	}

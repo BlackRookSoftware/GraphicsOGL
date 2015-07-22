@@ -56,6 +56,20 @@ public class OGLShaderGeometryProgram extends OGLShaderPipelineProgram
 		construct(g, streamName, sourceCode);
 	}
 
+	/**
+	 * Creates a new geometry shader program.
+	 * @param g the OGLGraphics instance to use.
+	 * @param streamName the name of the originating stream.
+	 * @param sourceCode the code to compile.
+	 * @throws NullPointerException if streamName or in is null.
+	 * @throws IOException if the source of the source code can't be read.
+	 */
+	public OGLShaderGeometryProgram(OGLGraphics g, String streamName, String sourceCode) throws IOException
+	{
+		super(g);
+		construct(g, streamName, sourceCode);
+	}
+
 	@Override
 	protected int allocate(OGLGraphics g)
 	{

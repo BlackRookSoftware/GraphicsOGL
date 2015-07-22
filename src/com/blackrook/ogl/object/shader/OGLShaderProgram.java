@@ -208,7 +208,7 @@ public class OGLShaderProgram extends OGLObject implements OGLBindable
 	{
 		g.getGL().glUseProgramObjectARB(getGLId());
 		if (uniforms != null) for (OGLUniform u : uniforms)
-			if (u.hasChanged())
+			if (u.isChanged())
 				u.set(g, this);
 	}
 
