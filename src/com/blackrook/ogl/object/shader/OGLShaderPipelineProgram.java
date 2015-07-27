@@ -43,7 +43,7 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 	 * @param g the OGLGraphics instance to use.
 	 * @throws IOException if the stream can't be read.
 	 */
-	protected OGLShaderPipelineProgram(OGLGraphics g) throws IOException
+	protected OGLShaderPipelineProgram(OGLGraphics g)
 	{
 		super(g);
 		if (glType != GL2.GL_VERTEX_SHADER && glType != GL2.GL_FRAGMENT_SHADER && glType != GL2.GL_GEOMETRY_PROGRAM_NV)

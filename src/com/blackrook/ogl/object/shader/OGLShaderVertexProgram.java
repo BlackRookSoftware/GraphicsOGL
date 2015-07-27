@@ -60,7 +60,7 @@ public class OGLShaderVertexProgram extends OGLShaderPipelineProgram
 	 * @throws NullPointerException if streamName or in is null.
 	 * @throws IOException if the source of the source code can't be read.
 	 */
-	public OGLShaderVertexProgram(OGLGraphics g, String streamName, String sourceCode) throws IOException
+	public OGLShaderVertexProgram(OGLGraphics g, String streamName, String sourceCode)
 	{
 		super(g);
 		construct(g, streamName, sourceCode);
