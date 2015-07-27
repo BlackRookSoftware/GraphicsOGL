@@ -142,7 +142,7 @@ public class OGLGraphics
 		
 		if (glExtensions == null)
 			throw new GraphicsException("Couldn't get list of extensions from OpenGL.");
-		String[] exts = glExtensions.toLowerCase().split(" ");
+		String[] exts = glExtensions.toLowerCase().split("\\s+");
 		extensionList = new CaseInsensitiveHash();
 		for (String s : exts)
 			extensionList.put(s);
@@ -501,6 +501,12 @@ public class OGLGraphics
 	public final String getGLExtensions()
 	{
 		return glExtensions;
+	}
+
+	/** Returns a string of all of the extensions supported by this system. */
+	public final int getGLExtensionCount()
+	{
+		return extensionList.size();
 	}
 
 	/**
