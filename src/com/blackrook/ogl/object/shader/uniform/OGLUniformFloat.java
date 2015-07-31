@@ -61,7 +61,7 @@ public class OGLUniformFloat extends OGLUniform
 	@Override
 	public void apply(OGLGraphics g, OGLShaderProgram shader)
 	{
-		g.getGL().glUniform1fARB(getUniformLocation(g, shader), value);
+		g.getGL().glUniform1fARB(shader.getUniformLocation(g, getName()), value);
 	}
 
 }

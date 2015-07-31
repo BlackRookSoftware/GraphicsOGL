@@ -12,7 +12,6 @@ import com.blackrook.ogl.object.shader.OGLShaderProgram;
 
 /**
  * Shader uniform that passes current canvas dimensions to a GLSL <code>vec2</code>.
- * For this class, {@link #isChanged()} always returns true.
  * @author Matthew Tropiano
  */
 public class OGLUniformCanvas extends OGLUniformVec2
@@ -26,13 +25,6 @@ public class OGLUniformCanvas extends OGLUniformVec2
 		super(name, 0f, 0f);
 	}
 
-	/** Always returns true. */
-	@Override
-	public boolean isChanged()
-	{
-		return true;
-	}
-	
 	@Override
 	public void apply(OGLGraphics g, OGLShaderProgram shader)
 	{

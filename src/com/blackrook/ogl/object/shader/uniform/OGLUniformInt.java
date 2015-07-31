@@ -17,9 +17,6 @@ import com.blackrook.ogl.object.shader.OGLShaderProgram;
  */
 public class OGLUniformInt extends OGLUniform
 {
-	/** The uniform's value. */
-	private int value;
-	
 	/**
 	 * Creates a new uniform.
 	 */

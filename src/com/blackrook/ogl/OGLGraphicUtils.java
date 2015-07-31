@@ -17,7 +17,6 @@ import java.nio.IntBuffer;
 
 import com.blackrook.commons.Common;
 import com.blackrook.ogl.enums.CachingHint;
-import com.blackrook.ogl.object.buffer.OGLBuffer;
 import com.blackrook.ogl.object.texture.OGLTexture;
 
 /**

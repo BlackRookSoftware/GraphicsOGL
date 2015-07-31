@@ -10,17 +10,15 @@ package com.blackrook.ogl.object.shader;
 import javax.media.opengl.*;
 
 import com.blackrook.commons.Common;
-import com.blackrook.ogl.OGLBindable;
 import com.blackrook.ogl.OGLGraphics;
 import com.blackrook.ogl.exception.*;
 import com.blackrook.ogl.object.OGLObject;
-import com.blackrook.ogl.object.shader.uniform.OGLUniform;
 
 /**
  * The main shader program class.
  * @author Matthew Tropiano
  */
-public class OGLShaderProgram extends OGLObject implements OGLBindable
+public class OGLShaderProgram extends OGLObject
 {
 	/** List of OpenGL object ids that were not deleted properly. */
 	protected static int[] UNDELETED_IDS;
@@ -39,8 +37,6 @@ public class OGLShaderProgram extends OGLObject implements OGLBindable
 	protected OGLShaderGeometryProgram gProg;
 	/** Fragment program. */
 	protected OGLShaderFragmentProgram fProg;
-	/** List of bound uniforms. */
-	protected OGLUniform[] uniforms;
 	
 	/* == After link == */
 	
@@ -143,14 +139,6 @@ public class OGLShaderProgram extends OGLObject implements OGLBindable
 	}
 	
 	/**
-	 * Sets the shader uniforms that this shader uses.
-	 */
-	public void setUniforms(OGLUniform ... uniforms)
-	{
-		this.uniforms = uniforms;
-	}
-	
-	/**
 	 * Links the Fragment and Vertex programs.
 	 * @throws GraphicsException	if the programs failed to link.
 	 */
@@ -199,25 +187,22 @@ public class OGLShaderProgram extends OGLObject implements OGLBindable
 	
 	/**
 	 * Binds this shader program to the specified OGLGraphics context.
-	 * This also will re-apply any changes made to the uniforms on this shader,
-	 * so in order to apply changes to the context, re-bind the shader. It will
-	 * automatically figure out what to re-apply and skip based on whether the uniform
-	 * values change or not.
 	 */
 	public void bindTo(OGLGraphics g)
 	{
 		g.getGL().glUseProgramObjectARB(getGLId());
-		if (uniforms != null) for (OGLUniform u : uniforms)
-			if (u.isChanged())
-				u.set(g, this);
 	}
 
-	@Override
-	public void unbindFrom(OGLGraphics g)
+	/**
+	 * Gets the location id of a uniform by its name.
+	 * @param name the uniform name.
+	 * @return the location id of the uniform, or 0 if not found.
+	 */
+	public int getUniformLocation(OGLGraphics g, String name)
 	{
-		g.getGL().glUseProgramObjectARB(0);
+		return g.getGL().glGetUniformLocationARB(getGLId(), name);
 	}
-
+	
 	/**
 	 * Returns the log from this program's linking.
 	 */

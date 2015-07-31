@@ -9,7 +9,6 @@ package com.blackrook.ogl.object.framebuffer;
 
 import javax.media.opengl.*;
 
-import com.blackrook.ogl.OGLBindable;
 import com.blackrook.ogl.OGLGraphics;
 import com.blackrook.ogl.object.OGLObject;
 import com.blackrook.ogl.object.texture.OGLTexture2D;
@@ -19,7 +18,7 @@ import com.blackrook.ogl.object.texture.OGLTexture2D;
  * It can bind itself to Texture2Ds and RenderBuffers and stuff.
  * @author Matthew Tropiano
  */
-public class OGLFrameBuffer extends OGLObject implements OGLBindable
+public class OGLFrameBuffer extends OGLObject
 {
 	/** List of OpenGL object ids that were not deleted properly. */
 	protected static int[] UNDELETED_IDS;
@@ -148,18 +147,6 @@ public class OGLFrameBuffer extends OGLObject implements OGLBindable
 		bindTo(g);
 		g.getGL().glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_RENDERBUFFER, 0);
 		unbindFrom(g);
-	}
-	
-	@Override
-	public void bindTo(OGLGraphics g)
-	{
-		g.getGL().glBindFramebuffer(GL2.GL_FRAMEBUFFER, getGLId());
-	}
-
-	@Override
-	public void unbindFrom(OGLGraphics g)
-	{
-		g.getGL().glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
 	}
 	
 	/**

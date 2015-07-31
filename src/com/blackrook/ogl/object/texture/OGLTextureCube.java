@@ -191,26 +191,4 @@ public class OGLTextureCube extends OGLTexture
 		return wrapR;
 	}
 
-	/**
-	 * Binds this texture to the specified OGLGraphics context.
-	 * Relies on the current texture unit for dictating which unit
-	 * to bind to.
-	 * <p> See {@link OGLGraphics#setTextureUnit(int)}
-	 */
-	public void bindTo(OGLGraphics g)
-	{
-		g.getGL().glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, getGLId());
-	}
-
-	/**
-	 * Unbinds this texture from the specified OGLGraphics context.
-	 * Relies on the current texture unit for dictating which unit
-	 * to unbind from.
-	 * <p> See {@link OGLGraphics#setTextureUnit(int)}
-	 */
-	public void unbindFrom(OGLGraphics g)
-	{
-		g.getGL().glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, 0);
-	}
-
 }

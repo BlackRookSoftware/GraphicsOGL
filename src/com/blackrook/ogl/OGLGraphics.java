@@ -7,6 +7,14 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
+
 import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
 
@@ -16,8 +24,13 @@ import com.blackrook.commons.math.RMath;
 import com.blackrook.ogl.data.*;
 import com.blackrook.ogl.enums.*;
 import com.blackrook.ogl.exception.GraphicsException;
+import com.blackrook.ogl.object.framebuffer.OGLFrameBuffer;
+import com.blackrook.ogl.object.framebuffer.OGLFrameRenderBuffer;
+import com.blackrook.ogl.object.shader.OGLShaderProgram;
 import com.blackrook.ogl.object.texture.OGLTexture;
+import com.blackrook.ogl.object.texture.OGLTexture1D;
 import com.blackrook.ogl.object.texture.OGLTexture2D;
+import com.blackrook.ogl.object.texture.OGLTextureCube;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
@@ -1717,15 +1730,6 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Binds an OGLBindable object to the current context.
-	 * Basically calls <code>bindable.bind(this)</code>.
-	 */
-	public void bind(OGLBindable bindable)
-	{
-		bindable.bindTo(this);
-	}
-
-	/**
 	 * Prints a message to the screen in the style of C's printf using
 	 * the GLUTFont.BITMAP_8_BY_13 font.
 	 * Remember to set color, and raster position before executing this method.
@@ -1938,62 +1942,261 @@ public class OGLGraphics
 			throw new GraphicsException("Illegal texture unit. Must be from 0 to "+(maxTextureImageUnits-1)+".");
 		gl.glActiveTexture(GL2.GL_TEXTURE0 + unit);
 	}
-
+	
+	/**
+	 * Binds a 1D texture object to the current active texture unit.
+	 * @param texture the texture to bind.
+	 */
+	public void setTexture1D(OGLTexture1D texture)
+	{
+		gl.glBindTexture(GL2.GL_TEXTURE_1D, texture.getGLId());
+	}
+	
+	
+	
 	/**
 	 * Unbinds a one-dimensional texture from the current texture unit.
 	 */
-	public void unbindTexture1D()
+	public void unsetTexture1D()
 	{
 		gl.glBindTexture(GL2.GL_TEXTURE_1D, 0);
 	}
 
 	/**
+	 * Binds a 2D texture object to the current active texture unit.
+	 * @param texture the texture to bind.
+	 */
+	public void setTexture2D(OGLTexture2D texture)
+	{
+		gl.glBindTexture(GL2.GL_TEXTURE_2D, texture.getGLId());
+	}
+
+	/**
 	 * Unbinds a two-dimensional texture from the current texture unit.
 	 */
-	public void unbindTexture2D()
+	public void unsetTexture2D()
 	{
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
 	}
 
 	/**
+	 * Binds a texture cube object to the current active texture unit.
+	 * @param texture the texture to bind.
+	 */
+	public void setTextureCube(OGLTextureCube texture)
+	{
+		gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, texture.getGLId());
+	}
+
+	/**
 	 * Unbinds a texture cube from the current texture unit.
 	 */
-	public void unbindTextureCube()
+	public void unsetTextureCube()
 	{
 		gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP,0);
 	}
 
 	/**
+	 * Binds a shader to the current context.
+	 * @param shader the shader to bind.
+	 */
+	public void setShaderProgram(OGLShaderProgram shader)
+	{
+		gl.glUseProgramObjectARB(shader.getGLId());
+	}
+	
+	/**
 	 * Unbinds a shader from the current context.
 	 */
-	public void unbindShaderProgram()
+	public void unsetShaderProgram()
 	{
 		gl.glUseProgramObjectARB(0);
+	}
+
+	/**
+	 * Binds a FrameBuffer for rendering.
+	 * @param frameBuffer the framebuffer to set as the current one.
+	 */
+	public void setFrameBuffer(OGLFrameBuffer frameBuffer)
+	{
+		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, frameBuffer.getGLId());
 	}
 
 	/**
 	 * Unbinds a FrameBuffer for rendering.
 	 * The current buffer will then be the default target buffer.
 	 */
-	public void unbindFrameBuffer()
+	public void unsetFrameBuffer()
 	{
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
 	}
 
 	/**
+	 * Binds a FrameRenderBuffer from the current context.
+	 * @param frameRenderBuffer the render buffer to bind to the current framebuffer.
+	 */
+	public void setFrameRenderBuffer(OGLFrameRenderBuffer frameRenderBuffer)
+	{
+		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, frameRenderBuffer.getGLId());
+	}
+
+	/**
 	 * Unbinds a FrameRenderBuffer from the current context.
 	 */
-	public void unbindFrameRenderBuffer()
+	public void unsetFrameRenderBuffer()
 	{
 		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, 0);
 	}
 
 	/**
-	 * Unbinds the current data buffer.
+	 * Binds a buffer to the current context.
+	 * @param type the buffer type to bind.
+	 * @param buffer the buffer to bind.
 	 */
-	public void unbindBuffer()
+	public void setBuffer(BufferType type, OGLBuffer<?> buffer)
 	{
-		gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+		gl.glBindBuffer(type.glValue, buffer.getGLId());
+	}
+
+	/**
+	 * Sets the capacity of the current buffer (sends no data).
+	 * @param type the buffer type binding.
+	 * @param cachingHint the caching hint on this buffer's data.
+	 * @param dataType the data type.
+	 * @param elements the amount of elements of the data type.
+	 */
+	public void setBufferCapacity(BufferType type, CachingHint cachingHint, DataType dataType, int elements)
+	{
+		gl.glBufferData(type.glValue, elements * dataType.size, null, cachingHint.glValue);
+		getError();
+	}
+	
+	/**
+	 * Sets the data of the current buffer.
+	 * @param type the buffer type binding.
+	 * @param cachingHint the caching hint on this buffer's data.
+	 * @param data the data to send.
+	 */
+	public void setBufferData(BufferType type, CachingHint cachingHint, Buffer data)
+	{
+		gl.glBufferData(type.glValue, data.capacity(), data, cachingHint.glValue);
+		getError();
+	}
+	
+	/**
+	 * Sets a subsection of data to the current buffer.
+	 * @param type the buffer type binding.
+	 * @param data the data to send.
+	 * @param size the amount of data to send.
+	 * @param offset the offset into the buffer to copy.
+	 */
+	public void setBufferSubData(BufferType type, Buffer data, int size, int offset)
+	{
+		gl.glBufferSubData(type.glValue, offset, size, data);
+		getError();
+	}
+	
+	/**
+	 * Maps the internal data of the current OGLBuffer to a local buffer for
+	 * quick modification/read. 
+	 * <p>
+	 * Please note that the returned Buffer is special in how 
+	 * it is used by OpenGL according to the AccessType.
+	 * </p>
+	 * @param accessType an access hint for the returned buffer.
+	 */
+	public ByteBuffer mapByteBuffer(BufferType type, AccessType accessType)
+	{
+		return gl.glMapBuffer(type.glValue, accessType.glValue);
+	}
+
+	/**
+	 * Maps the internal data of the current OGLBuffer to a local buffer for
+	 * quick modification/read. 
+	 * <p>
+	 * Please note that the returned Buffer is special in how 
+	 * it is used by OpenGL according to the AccessType.
+	 * </p>
+	 * @param accessType an access hint for the returned buffer.
+	 */
+	public ShortBuffer mapShortBuffer(BufferType type, AccessType accessType)
+	{
+		return mapByteBuffer(type, accessType).asShortBuffer();
+	}
+
+	/**
+	 * Maps the internal data of the current OGLBuffer to a local buffer for
+	 * quick modification/read. 
+	 * <p>
+	 * Please note that the returned Buffer is special in how 
+	 * it is used by OpenGL according to the AccessType.
+	 * </p>
+	 * @param accessType an access hint for the returned buffer.
+	 */
+	public IntBuffer mapIntBuffer(BufferType type, AccessType accessType)
+	{
+		return mapByteBuffer(type, accessType).asIntBuffer();
+	}
+
+	/**
+	 * Maps the internal data of the current OGLBuffer to a local buffer for
+	 * quick modification/read. 
+	 * <p>
+	 * Please note that the returned Buffer is special in how 
+	 * it is used by OpenGL according to the AccessType.
+	 * </p>
+	 * @param accessType an access hint for the returned buffer.
+	 */
+	public LongBuffer mapLongBuffer(BufferType type, AccessType accessType)
+	{
+		return mapByteBuffer(type, accessType).asLongBuffer();
+	}
+
+	/**
+	 * Maps the internal data of the current OGLBuffer to a local buffer for
+	 * quick modification/read. 
+	 * <p>
+	 * Please note that the returned Buffer is special in how 
+	 * it is used by OpenGL according to the AccessType.
+	 * </p>
+	 * @param accessType an access hint for the returned buffer.
+	 */
+	public FloatBuffer mapFloatBuffer(BufferType type, AccessType accessType)
+	{
+		return mapByteBuffer(type, accessType).asFloatBuffer();
+	}
+
+	/**
+	 * Maps the internal data of the current OGLBuffer to a local buffer for
+	 * quick modification/read. 
+	 * <p>
+	 * Please note that the returned Buffer is special in how 
+	 * it is used by OpenGL according to the AccessType.
+	 * </p>
+	 * @param accessType an access hint for the returned buffer.
+	 */
+	public DoubleBuffer mapDoubleBuffer(BufferType type, AccessType accessType)
+	{
+		return mapByteBuffer(type, accessType).asDoubleBuffer();
+	}
+
+	/**
+	 * Unmaps a buffer after it has been mapped and manipulated/read by the calling
+	 * client application. Please note that the Buffer that was mapped from this OGLBuffer
+	 * will be completely invalidated upon unmapping it.
+	 * @return true if unmap successful, false if data corruption occurred on unmap.
+	 */
+	public boolean unmapBuffer(BufferType type)
+	{
+		return gl.glUnmapBuffer(type.glValue);
+	}
+
+	/**
+	 * Unbinds the current buffer.
+	 */
+	public void unsetBuffer(BufferType type)
+	{
+		gl.glBindBuffer(type.glValue, 0);
 	}
 
 	/**
@@ -2002,16 +2205,14 @@ public class OGLGraphics
 	 * @param texlevel	the mipmapping level to copy this into (0 is normal, no mipmapping).
 	 * @param xoffset	the offset in pixels on this texture (x-coordinate) to put this texture data.
 	 * @param yoffset	the offset in pixels on this texture (y-coordinate) to put this texture data.
-	 * @param src_x		the screen-aligned x-coordinate of what to grab from the buffer (0 is the left side of the screen).
-	 * @param src_y		the screen-aligned y-coordinate of what to grab from the buffer (0 is the bottom of the screen).
+	 * @param srcX		the screen-aligned x-coordinate of what to grab from the buffer (0 is the left side of the screen).
+	 * @param srcY		the screen-aligned y-coordinate of what to grab from the buffer (0 is the bottom of the screen).
 	 * @param width		the width of the screen in pixels to grab.
 	 * @param height	the height of the screen in pixels to grab.
 	 */
-	public void copyBufferToTexture2D(OGLTexture2D t, int texlevel, int xoffset, 
-			int yoffset, int src_x, int src_y, int width, int height)
+	public void copyBufferToCurrentTexture(OGLTexture2D t, int texlevel, int xoffset, int yoffset, int srcX, int srcY, int width, int height)
 	{
-		gl.glCopyTexSubImage2D(t.getGLId(), texlevel, 
-				xoffset, yoffset, src_x, src_y, width, height);
+		gl.glCopyTexSubImage2D(GL2.GL_TEXTURE_2D, texlevel, xoffset, yoffset, srcX, srcY, width, height);
 	}
 
 	/**

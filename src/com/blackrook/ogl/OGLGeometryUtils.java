@@ -1,8 +1,8 @@
 package com.blackrook.ogl;
 
+import com.blackrook.ogl.enums.BufferType;
 import com.blackrook.ogl.enums.DataType;
 import com.blackrook.ogl.enums.GeometryType;
-import com.blackrook.ogl.object.buffer.OGLBuffer;
 
 /**
  * A utility class for drawing buffers with geometric data.
@@ -70,7 +70,7 @@ public final class OGLGeometryUtils
 	 */
 	public static void drawInterleavedGeometry(OGLGraphics g, OGLBuffer<?> buffer, GeometryType geom, int count, GeometryInfo ... directives) 
 	{
-		buffer.bindTo(g);
+		g.setBuffer(BufferType.GEOMETRY, buffer);
 
 		for (GeometryInfo info : directives)
 			info.setState(g, buffer.getDataType());
@@ -80,7 +80,7 @@ public final class OGLGeometryUtils
 		for (GeometryInfo info : directives)
 			info.unsetState(g);
 
-		buffer.unbindFrom(g);
+		g.unsetBuffer(BufferType.GEOMETRY);
 	}
 
 	/** Component type. */

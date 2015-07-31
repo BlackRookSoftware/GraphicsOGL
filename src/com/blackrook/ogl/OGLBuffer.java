@@ -5,19 +5,17 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object.framebuffer;
+package com.blackrook.ogl;
 
-import javax.media.opengl.*;
+import java.nio.Buffer;
 
-import com.blackrook.ogl.OGLGraphics;
-import com.blackrook.ogl.exception.GraphicsException;
 import com.blackrook.ogl.object.OGLObject;
 
 /**
- * A buffer for off-screen rendering that can be bound to FrameBuffers.
+ * Defines an OpenGL buffer.
  * @author Matthew Tropiano
  */
-public class OGLFrameRenderBuffer extends OGLObject
+public abstract class OGLBuffer<B extends Buffer> extends OGLObject
 {
 	/** List of OpenGL object ids that were not deleted properly. */
 	protected static int[] UNDELETED_IDS;
@@ -30,84 +28,32 @@ public class OGLFrameRenderBuffer extends OGLObject
 		UNDELETED_LENGTH = 0;
 	}
 
-	public enum Format
-	{
-		RGB(GL2.GL_RGB),
-		RGBA(GL2.GL_RGBA),
-		DEPTH(GL2.GL_DEPTH_COMPONENT),
-		STENCIL(GL2.GL_STENCIL_INDEX);
-		
-		public final int glid;
-		private Format(int id) {glid = id;}
-	}
-	
 	/** OpenGL temp variable. */
-	protected int[] glStateNum;
-	/** Internal format of the buffer. */
-	protected Format format;
-	/** Buffer width. */
-	protected int width;
-	/** Buffer height. */
-	protected int height;
-
+	private int[] glStateNum;
+	
 	/**
-	 * Constructs a new RenderBuffer object.
+	 * Creates an OpenGL Buffer of a certain type.
+	 * @param g	the graphics context to use.
 	 */
-	public OGLFrameRenderBuffer(OGLGraphics g, Format format, int width, int height)
+	public OGLBuffer(OGLGraphics g)
 	{
 		super(g);
-		if (width < 1 || height < 1)
-			throw new GraphicsException("Render buffer size cannot be less than 1 in any dimension.");
-		this.format = format;
-		this.width = width;
-		this.height = height;
-		bindTo(g);
-		g.getGL().glRenderbufferStorage(GL2.GL_RENDERBUFFER, format.glid, width, height);
-		unbindFrom(g);
 	}
-
+	
 	@Override
 	protected int allocate(OGLGraphics g)
 	{
 		glStateNum = new int[1];
-		g.clearError();
-		g.getGL().glGenRenderbuffers(1, glStateNum, 0);
-		g.getError();
+		g.getGL().glGenBuffers(1, glStateNum, 0);
 		return glStateNum[0];
 	}
-
+	
 	@Override
 	protected boolean free(OGLGraphics g)
 	{
 		glStateNum[0] = getGLId();
-		g.clearError();
-		g.getGL().glDeleteRenderbuffers(1,glStateNum,0);
-		g.getError();
+		g.getGL().glDeleteBuffers(1, glStateNum, 0);
 		return true;
-	}
-
-	/**
-	 * Gets the width of this render buffer.
-	 */
-	public int getWidth()
-	{
-		return width;
-	}
-
-	/**
-	 * Gets the height of this render buffer.
-	 */
-	public int getHeight()
-	{
-		return height;
-	}
-
-	/**
-	 * Gets the internal format of this render buffer.
-	 */
-	public Format getFormat()
-	{
-		return format;
 	}
 
 	/**
@@ -117,7 +63,7 @@ public class OGLFrameRenderBuffer extends OGLObject
 	{
 		if (UNDELETED_LENGTH > 0)
 		{
-			g.getGL().glDeleteRenderbuffers(UNDELETED_LENGTH, UNDELETED_IDS, 0);
+			g.getGL().glDeleteBuffers(UNDELETED_LENGTH, UNDELETED_IDS, 0);
 			UNDELETED_LENGTH = 0;
 		}
 	}

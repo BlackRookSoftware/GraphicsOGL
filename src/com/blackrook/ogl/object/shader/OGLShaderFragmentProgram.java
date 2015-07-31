@@ -62,7 +62,6 @@ public class OGLShaderFragmentProgram extends OGLShaderPipelineProgram
 	 * @param streamName the name of the originating stream.
 	 * @param sourceCode the code to compile.
 	 * @throws NullPointerException if streamName or in is null.
-	 * @throws IOException if the source of the source code can't be read.
 	 */
 	public OGLShaderFragmentProgram(OGLGraphics g, String streamName, String sourceCode)
 	{

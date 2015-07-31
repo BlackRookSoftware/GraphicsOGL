@@ -132,26 +132,4 @@ public class OGLTexture1D extends OGLTexture
 		return wrapS;
 	}
 
-	/**
-	 * Binds this texture to the specified OGLGraphics context.
-	 * Relies on the current texture unit for dictating which unit
-	 * to bind to.
-	 * <p> See {@link OGLGraphics#setTextureUnit(int)}
-	 */
-	public void bindTo(OGLGraphics g)
-	{
-		g.getGL().glBindTexture(GL2.GL_TEXTURE_1D, getGLId());
-	}
-
-	/**
-	 * Unbinds this texture from the specified OGLGraphics context.
-	 * Relies on the current texture unit for dictating which unit
-	 * to unbind from.
-	 * <p> See {@link OGLGraphics#setTextureUnit(int)}
-	 */
-	public void unbindFrom(OGLGraphics g)
-	{
-		g.getGL().glBindTexture(GL2.GL_TEXTURE_1D, 0);
-	}
-
 }

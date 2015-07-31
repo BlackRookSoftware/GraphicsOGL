@@ -7,8 +7,6 @@
  ******************************************************************************/
 package com.blackrook.ogl.object.shader;
 
-import java.io.IOException;
-
 import javax.media.opengl.*;
 
 import com.blackrook.ogl.OGLGraphics;
@@ -41,7 +39,6 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 	/**
 	 * Protected constructor for the program class.
 	 * @param g the OGLGraphics instance to use.
-	 * @throws IOException if the stream can't be read.
 	 */
 	protected OGLShaderPipelineProgram(OGLGraphics g)
 	{

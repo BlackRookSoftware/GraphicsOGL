@@ -18,8 +18,6 @@ public abstract class OGLUniform
 {
 	/** Uniform name. */
 	private String name;
-	/** Boolean flag for whether this uniform has changed or not. */
-	private boolean changed;
 
 	/**
 	 * Creates a new shader program uniform.
@@ -28,26 +26,14 @@ public abstract class OGLUniform
 	public OGLUniform(String name)
 	{
 		this.name = name;
-		this.changed = true;
 	}
 	
 	/**
-	 * Applies the value of this uniform to a shader.
-	 * @param g			the OGLGraphics context.
-	 * @param shader	the shader program to apply this to.
+	 * Applies the value of this uniform to a uniform location on the current shader.
+	 * @param g	the OGLGraphics context.
+	 * @param locationId the uniform location.
 	 */
-	public void set(OGLGraphics g, OGLShaderProgram shader)
-	{
-		apply(g, shader);
-		setChanged(false);
-	}
-
-	/**
-	 * Applies the value of this uniform to a shader.
-	 * @param g			the OGLGraphics context.
-	 * @param shader	the shader program to apply this to.
-	 */
-	protected abstract void apply(OGLGraphics g, OGLShaderProgram shader);
+	public abstract void apply(OGLGraphics g, int locationId);
 
 	/**
 	 * @return the name of this uniform.
@@ -55,33 +41,6 @@ public abstract class OGLUniform
 	public String getName()
 	{
 		return name;
-	}
-	
-	/**
-	 * Convenience function for finding the uniform's program location.
-	 */
-	protected int getUniformLocation(OGLGraphics g, OGLShaderProgram shader)
-	{
-		return g.getGL().glGetUniformLocationARB(shader.getGLId(), name);
-	}
-	
-	/**
-	 * Sets if this value has changed, so that hasChanged() returns
-	 * true or false. After application to the bound shader, the flag
-	 * should be set to false, using this. 
-	 */
-	protected void setChanged(boolean changed)
-	{
-		this.changed = changed;
-	}
-	
-	/**
-	 * Returns true if the value of the uniform has changed
-	 * and should be updated at shader binding, false otherwise.
-	 */
-	public boolean isChanged()
-	{
-		return changed;
 	}
 	
 }

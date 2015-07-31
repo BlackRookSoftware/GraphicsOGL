@@ -17,7 +17,6 @@ import javax.media.opengl.*;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.math.RMath;
-import com.blackrook.ogl.OGLBindable;
 import com.blackrook.ogl.OGLGraphics;
 import com.blackrook.ogl.exception.GraphicsException;
 import com.blackrook.ogl.object.OGLObject;
@@ -26,7 +25,7 @@ import com.blackrook.ogl.object.OGLObject;
  * Standard texture class.
  * @author Matthew Tropiano
  */
-public abstract class OGLTexture extends OGLObject implements OGLBindable
+public abstract class OGLTexture extends OGLObject
 {
 	/** Total estimated texture memory. */
 	private static int totalTextureMemory;
