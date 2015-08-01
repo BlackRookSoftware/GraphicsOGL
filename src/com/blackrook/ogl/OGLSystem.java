@@ -12,8 +12,6 @@ import javax.media.opengl.GLEventListener;
 
 import com.blackrook.commons.list.List;
 import com.blackrook.ogl.input.OGLInputConstants;
-import com.blackrook.ogl.object.framebuffer.OGLFrameBuffer;
-import com.blackrook.ogl.object.framebuffer.OGLFrameRenderBuffer;
 import com.blackrook.ogl.object.shader.OGLShaderPipelineProgram;
 import com.blackrook.ogl.object.shader.OGLShaderProgram;
 
@@ -92,7 +90,7 @@ public final class OGLSystem
 	    OGLBuffer.destroyUndeleted(glGraphics);
 	    OGLDisplayList.destroyUndeleted(glGraphics);
 	    OGLFrameBuffer.destroyUndeleted(glGraphics);
-	    OGLFrameRenderBuffer.destroyUndeleted(glGraphics);
+	    OGLRenderBuffer.destroyUndeleted(glGraphics);
 	    OGLOcclusionQuery.destroyUndeleted(glGraphics);
 	    OGLShaderProgram.destroyUndeleted(glGraphics);
 	    OGLShaderPipelineProgram.destroyUndeleted(glGraphics);

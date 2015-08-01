@@ -5,20 +5,13 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object.framebuffer;
-
-import javax.media.opengl.*;
-
-import com.blackrook.ogl.OGLGraphics;
-import com.blackrook.ogl.OGLObject;
-import com.blackrook.ogl.enums.RenderbufferFormat;
-import com.blackrook.ogl.exception.GraphicsException;
+package com.blackrook.ogl;
 
 /**
  * A buffer for off-screen rendering that can be bound to FrameBuffers.
  * @author Matthew Tropiano
  */
-public class OGLFrameRenderBuffer extends OGLObject
+public class OGLRenderBuffer extends OGLObject
 {
 	/** List of OpenGL object ids that were not deleted properly. */
 	protected static int[] UNDELETED_IDS;
@@ -31,29 +24,12 @@ public class OGLFrameRenderBuffer extends OGLObject
 		UNDELETED_LENGTH = 0;
 	}
 
-	/** OpenGL temp variable. */
-	protected int[] glStateNum;
-	/** Internal format of the buffer. */
-	protected RenderbufferFormat format;
-	/** Buffer width. */
-	protected int width;
-	/** Buffer height. */
-	protected int height;
-
 	/**
 	 * Constructs a new RenderBuffer object.
 	 */
-	public OGLFrameRenderBuffer(OGLGraphics g, RenderbufferFormat format, int width, int height)
+	OGLRenderBuffer(OGLGraphics g)
 	{
 		super(g);
-		if (width < 1 || height < 1)
-			throw new GraphicsException("Render buffer size cannot be less than 1 in any dimension.");
-		this.format = format;
-		this.width = width;
-		this.height = height;
-		bindTo(g);
-		g.getGL().glRenderbufferStorage(GL2.GL_RENDERBUFFER, format.glid, width, height);
-		unbindFrom(g);
 	}
 
 	@Override
@@ -74,30 +50,6 @@ public class OGLFrameRenderBuffer extends OGLObject
 		g.getGL().glDeleteRenderbuffers(1, glStateNum, 0);
 		g.getError();
 		return true;
-	}
-
-	/**
-	 * Gets the width of this render buffer.
-	 */
-	public int getWidth()
-	{
-		return width;
-	}
-
-	/**
-	 * Gets the height of this render buffer.
-	 */
-	public int getHeight()
-	{
-		return height;
-	}
-
-	/**
-	 * Gets the internal format of this render buffer.
-	 */
-	public RenderbufferFormat getFormat()
-	{
-		return format;
 	}
 
 	/**

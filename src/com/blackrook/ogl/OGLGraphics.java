@@ -25,8 +25,6 @@ import com.blackrook.commons.math.RMath;
 import com.blackrook.ogl.data.*;
 import com.blackrook.ogl.enums.*;
 import com.blackrook.ogl.exception.GraphicsException;
-import com.blackrook.ogl.object.framebuffer.OGLFrameBuffer;
-import com.blackrook.ogl.object.framebuffer.OGLFrameRenderBuffer;
 import com.blackrook.ogl.object.shader.OGLShaderProgram;
 import com.jogamp.opengl.util.gl2.GLUT;
 
@@ -2154,6 +2152,22 @@ public class OGLGraphics
 	}
 	
 	/**
+	 * Copies the contents of the current read frame buffer into a two-dimensional texture.
+	 * @param texture	the texture object.
+	 * @param texlevel	the mipmapping level to copy this into (0 is normal, no mipmapping).
+	 * @param xoffset	the offset in pixels on this texture (x-coordinate) to put this texture data.
+	 * @param yoffset	the offset in pixels on this texture (y-coordinate) to put this texture data.
+	 * @param srcX		the screen-aligned x-coordinate of what to grab from the buffer (0 is the left side of the screen).
+	 * @param srcY		the screen-aligned y-coordinate of what to grab from the buffer (0 is the bottom of the screen).
+	 * @param width		the width of the screen in pixels to grab.
+	 * @param height	the height of the screen in pixels to grab.
+	 */
+	public void copyBufferToCurrentTexture2D(OGLTexture texture, int texlevel, int xoffset, int yoffset, int srcX, int srcY, int width, int height)
+	{
+		gl.glCopyTexSubImage2D(GL2.GL_TEXTURE_2D, texlevel, xoffset, yoffset, srcX, srcY, width, height);
+	}
+
+	/**
 	 * Unbinds a two-dimensional texture from the current texture unit.
 	 */
 	public void unsetTexture2D()
@@ -2288,6 +2302,56 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Creates a new render buffer object.
+	 * @return a new, uninitialized render buffer object.
+	 * @throws GraphicsException if the object could not be created.
+	 */
+	public OGLRenderBuffer createFrameRenderBuffer()
+	{
+		return new OGLRenderBuffer(this);
+	}
+
+	/**
+	 * Binds a FrameRenderBuffer from the current context.
+	 * @param frameRenderBuffer the render buffer to bind to the current framebuffer.
+	 */
+	public void setFrameRenderBuffer(OGLRenderBuffer frameRenderBuffer)
+	{
+		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, frameRenderBuffer.getGLId());
+	}
+
+	/**
+	 * Sets a render buffer's internal format and size.
+	 * @param format the buffer format.
+	 * @param width the width in pixel data.
+	 * @param height the height in pixel data.
+	 */
+	public void setFrameRenderBufferSize(RenderbufferFormat format, int width, int height)
+	{
+		if (width < 1 || height < 1)
+			throw new GraphicsException("Render buffer size cannot be less than 1 in any dimension.");
+		gl.glRenderbufferStorage(GL2.GL_RENDERBUFFER, format.glid, width, height);
+	}
+
+	/**
+	 * Unbinds a FrameRenderBuffer from the current context.
+	 */
+	public void unsetFrameRenderBuffer()
+	{
+		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, 0);
+	}
+
+	/**
+	 * Creates a new framebuffer object.
+	 * @return a new, uninitialized framebuffer object.
+	 * @throws GraphicsException if the object could not be created.
+	 */
+	public OGLFrameBuffer createFrameBuffer()
+	{
+		return new OGLFrameBuffer(this);
+	}
+
+	/**
 	 * Binds a FrameBuffer for rendering.
 	 * @param frameBuffer the framebuffer to set as the current one.
 	 */
@@ -2297,29 +2361,102 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Tests for frame buffer completeness on the bound framebuffer. 
+	 * If incomplete, this throws a GraphicsException with the error message.
+	 */
+	public void checkFrameBufferStatus()
+	{
+		int status = gl.glCheckFramebufferStatus(GL2.GL_FRAMEBUFFER);
+		String errorString = null;
+		if (status != GL2.GL_FRAMEBUFFER_COMPLETE) 
+		{
+			switch (status)
+			{
+				case GL2.GL_FRAMEBUFFER_UNSUPPORTED:
+					errorString = "Framebuffer object format is unsupported by the video hardware.";
+					break;
+				case GL2.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+					errorString = "Incomplete attachment.";
+					break;
+				case GL2.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+					errorString = "Incomplete missing attachment.";
+					break;
+				case GL2.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+					errorString = "Incomplete dimensions.";
+					break;
+				case GL2.GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
+					errorString = "Incomplete formats.";
+					break;
+				case GL2.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+					errorString = "Incomplete draw buffer.";
+					break;
+				case GL2.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+					errorString = "Incomplete read buffer.";
+					break;
+				case GL2.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+					errorString = "Incomplete multisample buffer.";
+					break;
+				default:
+					errorString = "Framebuffer object status is invalid due to unknown error.";
+					break;
+			}
+			throw new GraphicsException("OpenGL raised error: "+errorString);
+		}
+	}
+
+	/**
+	 * Attaches a texture to this frame buffer for rendering directly to a texture.
+	 * NOTE: This will leave the current frame buffer unbound after this, as it is
+	 * used for a target.
+	 * @param attachPoint the attachment source point for this texture.
+	 * @param texture the texture to attach this to.
+	 */
+	public void attachFrameTexture2D(AttachPoint attachPoint, OGLTexture texture)
+	{
+		gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_TEXTURE_2D, texture.getGLId(), 0);
+	}
+	
+	/**
+	 * Attaches a texture to this frame buffer for rendering directly to a texture.
+	 * NOTE: This will leave the current frame buffer unbound after this, as it is
+	 * used for a target.
+	 * @param attachPoint the attachment source point for this texture.
+	 */
+	public void detachFrameTexture2D(AttachPoint attachPoint)
+	{
+		gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_TEXTURE_2D, 0, 0);
+	}
+	
+	/**
+	 * Attaches a texture to this frame buffer for rendering directly to a texture.
+	 * NOTE: This will leave the current frame buffer unbound after this, as it is
+	 * used for a target.
+	 * @param attachPoint the attachment source point for this texture.
+	 * @param renderBuffer the texture to attach this to.
+	 */
+	public void attachFrameRenderBuffer(AttachPoint attachPoint, OGLRenderBuffer renderBuffer)
+	{
+		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_RENDERBUFFER, renderBuffer.getGLId());
+	}
+	
+	/**
+	 * Attaches a texture to this frame buffer for rendering directly to a texture.
+	 * NOTE: This will leave the current frame buffer unbound after this, as it is
+	 * used for a target.
+	 * @param attachPoint the attachment source point for this texture.
+	 */
+	public void detachFrameRenderBuffer(AttachPoint attachPoint)
+	{
+		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_RENDERBUFFER, 0);
+	}
+	
+	/**
 	 * Unbinds a FrameBuffer for rendering.
 	 * The current buffer will then be the default target buffer.
 	 */
 	public void unsetFrameBuffer()
 	{
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
-	}
-
-	/**
-	 * Binds a FrameRenderBuffer from the current context.
-	 * @param frameRenderBuffer the render buffer to bind to the current framebuffer.
-	 */
-	public void setFrameRenderBuffer(OGLFrameRenderBuffer frameRenderBuffer)
-	{
-		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, frameRenderBuffer.getGLId());
-	}
-
-	/**
-	 * Unbinds a FrameRenderBuffer from the current context.
-	 */
-	public void unsetFrameRenderBuffer()
-	{
-		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, 0);
 	}
 
 	/**
@@ -2564,66 +2701,6 @@ public class OGLGraphics
 	public void unsetBuffer(BufferType type)
 	{
 		gl.glBindBuffer(type.glValue, 0);
-	}
-
-	/**
-	 * Copies the contents of the current read frame buffer into a two-dimensional texture.
-	 * @param texture	the texture object.
-	 * @param texlevel	the mipmapping level to copy this into (0 is normal, no mipmapping).
-	 * @param xoffset	the offset in pixels on this texture (x-coordinate) to put this texture data.
-	 * @param yoffset	the offset in pixels on this texture (y-coordinate) to put this texture data.
-	 * @param srcX		the screen-aligned x-coordinate of what to grab from the buffer (0 is the left side of the screen).
-	 * @param srcY		the screen-aligned y-coordinate of what to grab from the buffer (0 is the bottom of the screen).
-	 * @param width		the width of the screen in pixels to grab.
-	 * @param height	the height of the screen in pixels to grab.
-	 */
-	public void copyBufferToCurrentTexture2D(OGLTexture texture, int texlevel, int xoffset, int yoffset, int srcX, int srcY, int width, int height)
-	{
-		gl.glCopyTexSubImage2D(GL2.GL_TEXTURE_2D, texlevel, xoffset, yoffset, srcX, srcY, width, height);
-	}
-
-	/**
-	 * Tests for frame buffer completeness on the bound buffer. 
-	 * If incomplete, this throws a GraphicsException with the error message.
-	 */
-	public void checkFrameBufferStatus()
-	{
-		int status = gl.glCheckFramebufferStatus(GL2.GL_FRAMEBUFFER);
-		String errorString = null;
-		if (status != GL2.GL_FRAMEBUFFER_COMPLETE) 
-		{
-			switch (status)
-			{
-				case GL2.GL_FRAMEBUFFER_UNSUPPORTED:
-					errorString = "Framebuffer object format is unsupported by the video hardware.";
-					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-					errorString = "Incomplete attachment.";
-					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-					errorString = "Incomplete missing attachment.";
-					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-					errorString = "Incomplete dimensions.";
-					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-					errorString = "Incomplete formats.";
-					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-					errorString = "Incomplete draw buffer.";
-					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-					errorString = "Incomplete read buffer.";
-					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-					errorString = "Incomplete multisample buffer.";
-					break;
-				default:
-					errorString = "Framebuffer object status is invalid due to unknown error.";
-					break;
-			}
-			throw new GraphicsException("OpenGL raised error: "+errorString);
-		}
 	}
 
 	/**
