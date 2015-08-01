@@ -7,15 +7,11 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
-import java.nio.Buffer;
-
-import com.blackrook.ogl.object.OGLObject;
-
 /**
  * Defines an OpenGL buffer.
  * @author Matthew Tropiano
  */
-public abstract class OGLBuffer<B extends Buffer> extends OGLObject
+public class OGLBuffer extends OGLObject
 {
 	/** List of OpenGL object ids that were not deleted properly. */
 	protected static int[] UNDELETED_IDS;
@@ -28,14 +24,11 @@ public abstract class OGLBuffer<B extends Buffer> extends OGLObject
 		UNDELETED_LENGTH = 0;
 	}
 
-	/** OpenGL temp variable. */
-	private int[] glStateNum;
-	
 	/**
 	 * Creates an OpenGL Buffer of a certain type.
 	 * @param g	the graphics context to use.
 	 */
-	public OGLBuffer(OGLGraphics g)
+	OGLBuffer(OGLGraphics g)
 	{
 		super(g);
 	}

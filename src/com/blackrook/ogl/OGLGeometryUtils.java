@@ -64,18 +64,19 @@ public final class OGLGeometryUtils
 	 * expected to be interleaved geometry data.
 	 * @param g the graphics context.
 	 * @param buffer the buffer to use for drawing.
-	 * @param geom the geometry type.
+	 * @param dataType the data type that it contains.
+	 * @param geometryType the geometry type.
 	 * @param count the element count (in the geometric figure).
-	 * @param directives 
+	 * @param directives the geometry directives.
 	 */
-	public static void drawInterleavedGeometry(OGLGraphics g, OGLBuffer<?> buffer, GeometryType geom, int count, GeometryInfo ... directives) 
+	public static void drawInterleavedGeometry(OGLGraphics g, OGLBuffer buffer, DataType dataType, GeometryType geometryType, int count, GeometryInfo ... directives) 
 	{
 		g.setBuffer(BufferType.GEOMETRY, buffer);
 
 		for (GeometryInfo info : directives)
-			info.setState(g, buffer.getDataType());
+			info.setState(g, dataType);
 		
-		g.getGL().glDrawArrays(geom.glValue, 0, count);
+		g.getGL().glDrawArrays(geometryType.glValue, 0, count);
 	
 		for (GeometryInfo info : directives)
 			info.unsetState(g);

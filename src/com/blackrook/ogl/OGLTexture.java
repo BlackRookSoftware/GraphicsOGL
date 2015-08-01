@@ -1,3 +1,4 @@
+package com.blackrook.ogl;
 /*******************************************************************************
  * Copyright (c) 2014 Black Rook Software
  * All rights reserved. This program and the accompanying materials
@@ -5,20 +6,15 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object.framebuffer;
 
-import javax.media.opengl.*;
 
-import com.blackrook.ogl.OGLGraphics;
-import com.blackrook.ogl.OGLObject;
-import com.blackrook.ogl.enums.RenderbufferFormat;
 import com.blackrook.ogl.exception.GraphicsException;
 
 /**
- * A buffer for off-screen rendering that can be bound to FrameBuffers.
+ * Standard texture class.
  * @author Matthew Tropiano
  */
-public class OGLFrameRenderBuffer extends OGLObject
+public class OGLTexture extends OGLObject
 {
 	/** List of OpenGL object ids that were not deleted properly. */
 	protected static int[] UNDELETED_IDS;
@@ -31,83 +27,45 @@ public class OGLFrameRenderBuffer extends OGLObject
 		UNDELETED_LENGTH = 0;
 	}
 
-	/** OpenGL temp variable. */
-	protected int[] glStateNum;
-	/** Internal format of the buffer. */
-	protected RenderbufferFormat format;
-	/** Buffer width. */
-	protected int width;
-	/** Buffer height. */
-	protected int height;
-
 	/**
-	 * Constructs a new RenderBuffer object.
+	 * Creates a new blank texture object.
+	 * @param targetName the texture target name.
+	 * @param g the OGLGraphics context.
+	 * @throws GraphicsException if an exception occurs during this object's creation.
 	 */
-	public OGLFrameRenderBuffer(OGLGraphics g, RenderbufferFormat format, int width, int height)
+	OGLTexture(OGLGraphics g)
 	{
 		super(g);
-		if (width < 1 || height < 1)
-			throw new GraphicsException("Render buffer size cannot be less than 1 in any dimension.");
-		this.format = format;
-		this.width = width;
-		this.height = height;
-		bindTo(g);
-		g.getGL().glRenderbufferStorage(GL2.GL_RENDERBUFFER, format.glid, width, height);
-		unbindFrom(g);
 	}
-
+	
 	@Override
 	protected int allocate(OGLGraphics g)
 	{
 		glStateNum = new int[1];
 		g.clearError();
-		g.getGL().glGenRenderbuffers(1, glStateNum, 0);
+		g.getGL().glGenTextures(1, glStateNum, 0);
 		g.getError();
 		return glStateNum[0];
 	}
-
+	
 	@Override
 	protected boolean free(OGLGraphics g)
 	{
 		glStateNum[0] = getGLId();
 		g.clearError();
-		g.getGL().glDeleteRenderbuffers(1, glStateNum, 0);
+		g.getGL().glDeleteTextures(1, glStateNum, 0);
 		g.getError();
 		return true;
 	}
-
+	
 	/**
-	 * Gets the width of this render buffer.
-	 */
-	public int getWidth()
-	{
-		return width;
-	}
-
-	/**
-	 * Gets the height of this render buffer.
-	 */
-	public int getHeight()
-	{
-		return height;
-	}
-
-	/**
-	 * Gets the internal format of this render buffer.
-	 */
-	public RenderbufferFormat getFormat()
-	{
-		return format;
-	}
-
-	/**
-	 * Destroys undeleted buffers abandoned from destroyed Java objects.
+	 * Destroys undeleted texture objects abandoned from destroyed Java objects.
 	 */
 	public static void destroyUndeleted(OGLGraphics g)
 	{
 		if (UNDELETED_LENGTH > 0)
 		{
-			g.getGL().glDeleteRenderbuffers(UNDELETED_LENGTH, UNDELETED_IDS, 0);
+			g.getGL().glDeleteTextures(UNDELETED_LENGTH, UNDELETED_IDS, 0);
 			UNDELETED_LENGTH = 0;
 		}
 	}
@@ -123,12 +81,14 @@ public class OGLFrameRenderBuffer extends OGLObject
 		}
 		UNDELETED_IDS[UNDELETED_LENGTH++] = id;
 	}
-	
+
 	@Override
 	public void finalize() throws Throwable
 	{
 		if (isAllocated())
+		{
 			finalizeAddId(getGLId());
+		}
 		super.finalize();
 	}
 

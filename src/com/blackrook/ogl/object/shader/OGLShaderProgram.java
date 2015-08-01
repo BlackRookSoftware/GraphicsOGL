@@ -11,8 +11,8 @@ import javax.media.opengl.*;
 
 import com.blackrook.commons.Common;
 import com.blackrook.ogl.OGLGraphics;
+import com.blackrook.ogl.OGLObject;
 import com.blackrook.ogl.exception.*;
-import com.blackrook.ogl.object.OGLObject;
 
 /**
  * The main shader program class.
@@ -42,7 +42,6 @@ public class OGLShaderProgram extends OGLObject
 	
 	/** The shader log. */
 	protected String log;
-	/** Map of  */
 	
 	/**
 	 * Creates a new Shader.

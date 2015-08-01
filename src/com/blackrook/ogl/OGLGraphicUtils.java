@@ -11,13 +11,16 @@ import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.math.RMath;
+import com.blackrook.ogl.enums.BufferType;
 import com.blackrook.ogl.enums.CachingHint;
-import com.blackrook.ogl.object.texture.OGLTexture;
+import com.blackrook.ogl.enums.DataType;
 
 /**
  * Utility library for graphics stuff.
@@ -26,29 +29,57 @@ import com.blackrook.ogl.object.texture.OGLTexture;
 public final class OGLGraphicUtils
 {
 	
+	/**
+	 * Returns true if an image has power-of-two dimensions. 
+	 * @param image the image to check.
+	 */
+	public static boolean hasPowerOfTwoDimensions(BufferedImage image)
+	{
+		return RMath.isPowerOfTwo(image.getWidth()) && RMath.isPowerOfTwo(image.getHeight());
+	}
 	
-	
+	/**
+	 * Gets the byte data for a texture in BGRA color information per pixel.
+	 * @param image the input image.
+	 * @return a new {@link ByteBuffer} of the image's byte data.
+	 */
+	public static Buffer getByteData(BufferedImage image)
+	{
+		ByteBuffer out = Common.allocDirectByteBuffer(getRawSize(image));
+		out.order(ByteOrder.LITTLE_ENDIAN);
+		IntBuffer intout = out.asIntBuffer();
+		
+		int imageWidth = image.getWidth();
+		int imageHeight = image.getHeight();
+	    int[] data = new int[imageWidth * imageHeight];
+	    image.getRGB(0, 0, imageWidth, imageHeight, data, 0, imageWidth);
+		intout.put(data);
+	    return out;
+	}
+
+	/**
+	 * Returns the raw size in bytes that this image will need for byte
+	 * buffer/array storage.
+	 */
+	public static int getRawSize(BufferedImage image)
+	{
+		int imageWidth = image.getWidth();
+		int imageHeight = image.getHeight();
+		return imageWidth * imageHeight * 4;
+	}
+
 	/**
 	 * Puts image data into an OGL buffer. 
 	 * The buffer's contents are completely replaced.
 	 * @param image the image to load.
 	 * @param out the OGL buffer to put the data into.
 	 */
-	public static void putImageData(OGLGraphics g, BufferedImage image, OGLBuffer<?> out)
+	public static void putImageData(OGLGraphics g, BufferedImage image, OGLBuffer out)
 	{
-		int size = OGLTexture.getRawSize(image);
-		ByteBuffer buffer = Common.allocDirectByteBuffer(size);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
-		IntBuffer intout = buffer.asIntBuffer();
-		
-		int imageWidth = image.getWidth();
-		int imageHeight = image.getHeight();
-	    int[] data = new int[imageWidth*imageHeight];
-	    image.getRGB(0, 0, imageWidth, imageHeight, data, 0, imageWidth);
-    	intout.put(data);
-    	
-    	out.setByteCapacity(g, CachingHint.STREAM_DRAW, size);
-    	out.sendByteSubData(g, buffer, size, 0);
+		int size = getRawSize(image);
+		Buffer data = getByteData(image);
+    	g.setBufferCapacity(BufferType.PIXEL, CachingHint.STREAM_DRAW, DataType.BYTE, size);
+    	g.setBufferSubData(BufferType.PIXEL, data, size, 0);
 	}
 
 	/**

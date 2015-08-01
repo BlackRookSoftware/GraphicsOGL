@@ -5,9 +5,8 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object;
+package com.blackrook.ogl;
 
-import com.blackrook.ogl.OGLGraphics;
 import com.blackrook.ogl.exception.GraphicsException;
 
 /**
@@ -23,13 +22,16 @@ public abstract class OGLObject
 	
 	/** OpenGL object id. */
 	private int glId;
-
+	/** OpenGL temp variable. */
+	protected int[] glStateNum;
+	
 	/**
 	 * Creates a new OGLObject and calls initialize.
 	 */
 	protected OGLObject(OGLGraphics g)
 	{
 		glId = ID_NONE;
+		glStateNum = new int[1];
 		initialize(g);
 	}
 	

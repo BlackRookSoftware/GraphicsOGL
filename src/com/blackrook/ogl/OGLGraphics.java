@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
+import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -27,10 +28,6 @@ import com.blackrook.ogl.exception.GraphicsException;
 import com.blackrook.ogl.object.framebuffer.OGLFrameBuffer;
 import com.blackrook.ogl.object.framebuffer.OGLFrameRenderBuffer;
 import com.blackrook.ogl.object.shader.OGLShaderProgram;
-import com.blackrook.ogl.object.texture.OGLTexture;
-import com.blackrook.ogl.object.texture.OGLTexture1D;
-import com.blackrook.ogl.object.texture.OGLTexture2D;
-import com.blackrook.ogl.object.texture.OGLTextureCube;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
@@ -131,6 +128,11 @@ public class OGLGraphics
 	/** Last frame nanotime. */
 	private long lastTimeNanos;
 	
+	/** Current display list. */
+	private OGLDisplayList currentDisplayList; 
+	/** Current running occlusion query. */
+	private OGLOcclusionQuery currentOcclusionQuery;
+
 	/**
 	 * Creates a new OGLGraphics context.
 	 * @param system the source system.
@@ -653,15 +655,6 @@ public class OGLGraphics
 	public void setViewportToCanvas()
 	{
 		setViewport(0, 0, (int)getCanvasWidth(), (int)getCanvasHeight());
-	}
-
-	/**
-	 * Convenience method for setting the viewport to a texture's dimensions.<br/>
-	 * Equivalent to: <code>setViewport(0, 0, texture.getWidth(), texture.getHeight())</code>
-	 */
-	public void setViewportToTexture(OGLTexture texture)
-	{
-		setViewport(0, 0, texture.getWidth(), texture.getHeight());
 	}
 
 	/**
@@ -1730,6 +1723,15 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Destroys an object, freeing it from OpenGL.
+	 * @param object the object to free.
+	 */
+	public void destroy(OGLObject object)
+	{
+		object.destroy(this);
+	}
+	
+	/**
 	 * Prints a message to the screen in the style of C's printf using
 	 * the GLUTFont.BITMAP_8_BY_13 font.
 	 * Remember to set color, and raster position before executing this method.
@@ -1944,16 +1946,108 @@ public class OGLGraphics
 	}
 	
 	/**
+	 * Creates a new texture object.
+	 * @return a new, uninitialized texture object.
+	 * @throws GraphicsException if the object could not be created.
+	 */
+	public OGLTexture createTexture()
+	{
+		return new OGLTexture(this);
+	}
+	
+	/**
 	 * Binds a 1D texture object to the current active texture unit.
 	 * @param texture the texture to bind.
 	 */
-	public void setTexture1D(OGLTexture1D texture)
+	public void setTexture1D(OGLTexture texture)
 	{
 		gl.glBindTexture(GL2.GL_TEXTURE_1D, texture.getGLId());
 	}
 	
+	/**
+	 * Sets the current filtering for the current 1D texture.
+	 * @param minFilter the minification filter.
+	 * @param magFilter the magnification filter.
+	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
+	 * @param genMipmaps if this generates mipmaps automatically.
+	 */
+	public void setTextureFiltering1D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean genMipmaps)
+	{
+		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
+    	gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MAG_FILTER, magFilter.glid);
+		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MIN_FILTER, minFilter.glid);
+		gl.glTexParameterf(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+    	gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_GENERATE_MIPMAP, genMipmaps ? GL2.GL_TRUE : GL2.GL_FALSE);
+	}
 	
-	
+	/**
+	 * Sets the current wrapping for the current 1D texture.
+	 * @param wrapS the wrapping mode, S-axis.
+	 */
+	public void setTextureWrapping1D(TextureWrapType wrapS)
+	{
+		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_WRAP_S, wrapS.glid);
+	}
+
+	/**
+	 * Sends a texture into OpenGL's memory for the current 1D texture.
+	 * @param image the image to send.
+	 * @param format the internal format.
+	 * @param border the pixel border to add, if any.
+	 */
+	public void setTextureData1D(BufferedImage image, TextureFormat format, int border)
+	{
+		if (image.getWidth() > getMaxTextureSize() || image.getHeight() > getMaxTextureSize())
+			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
+		
+		Buffer buffer = null;
+		int imgWidth = image.getWidth();
+		
+		if (!OGLGraphicUtils.hasPowerOfTwoDimensions(image))
+		{
+			imgWidth = RMath.closestPowerOfTwo(image.getWidth());
+			buffer = OGLGraphicUtils.getByteData(OGLGraphicUtils.performResizeBilinear(image, imgWidth, 1)); 
+		}
+		else
+		{
+			buffer = OGLGraphicUtils.getByteData(image);	
+		}
+		
+		clearError();
+		gl.glTexImage1D(
+			GL2.GL_TEXTURE_1D,
+			0,
+			format.glid, 
+			imgWidth,
+			border,
+			GL2.GL_BGRA,
+			GL2.GL_UNSIGNED_BYTE,
+			buffer
+		);
+		getError();
+	}
+
+	/**
+	 * Sends a subset of data to the currently-bound 1D texture already in OpenGL's memory.
+	 * @param image the image to send.
+	 * @param xoffs the texel offset.
+	 */
+	public void setTextureSubData1D(BufferedImage image, int xoffs)
+	{
+		Buffer buffer = OGLGraphicUtils.getByteData(image);
+		clearError();
+		gl.glTexSubImage1D(
+			GL2.GL_TEXTURE_1D,
+			0,
+			xoffs,
+			image.getWidth(),
+			GL2.GL_RGBA,
+			GL2.GL_UNSIGNED_BYTE,
+			buffer
+		);
+		getError();
+	}
+
 	/**
 	 * Unbinds a one-dimensional texture from the current texture unit.
 	 */
@@ -1966,11 +2060,99 @@ public class OGLGraphics
 	 * Binds a 2D texture object to the current active texture unit.
 	 * @param texture the texture to bind.
 	 */
-	public void setTexture2D(OGLTexture2D texture)
+	public void setTexture2D(OGLTexture texture)
 	{
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, texture.getGLId());
 	}
 
+	/**
+	 * Sets the current filtering for the current 2D texture.
+	 * @param minFilter the minification filter.
+	 * @param magFilter the magnification filter.
+	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
+	 * @param genMipmaps if this generates mipmaps automatically.
+	 */
+	public void setTextureFiltering2D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean genMipmaps)
+	{
+		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
+    	gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, magFilter.glid);
+		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, minFilter.glid);
+		gl.glTexParameterf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+    	gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_GENERATE_MIPMAP, genMipmaps ? GL2.GL_TRUE : GL2.GL_FALSE);
+	}
+	
+	/**
+	 * Sets the current wrapping for the current 2D texture.
+	 * @param wrapS the wrapping mode, S-axis.
+	 * @param wrapT the wrapping mode, T-axis.
+	 */
+	public void setTextureWrapping2D(TextureWrapType wrapS, TextureWrapType wrapT)
+	{
+		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_S, wrapS.glid);
+		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_T, wrapT.glid);
+	}
+	
+	/**
+	 * Sends a texture into OpenGL's memory for the current 2D texture.
+	 * @param image the image to send.
+	 * @param format the internal format.
+	 * @param border the pixel border to add, if any.
+	 */
+	public void setTextureData2D(BufferedImage image, TextureFormat format, int border)
+	{
+		if (image.getWidth() > getMaxTextureSize() || image.getHeight() > getMaxTextureSize())
+			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
+		
+		Buffer buffer = null;
+		int imgWidth = image.getWidth();
+		int imgHeight = image.getHeight();
+
+		if (!OGLGraphicUtils.hasPowerOfTwoDimensions(image))
+		{
+			imgWidth = RMath.closestPowerOfTwo(image.getWidth());
+			imgHeight = RMath.closestPowerOfTwo(image.getHeight());
+			buffer = OGLGraphicUtils.getByteData(OGLGraphicUtils.performResizeBilinear(image, imgWidth, imgHeight)); 
+		}
+		else
+		{
+			buffer = OGLGraphicUtils.getByteData(image);	
+		}
+
+		gl.glTexImage2D(
+			GL2.GL_TEXTURE_2D,
+			0,
+			format.glid, 
+			imgWidth,
+			imgHeight,
+			border,
+			GL2.GL_BGRA,
+			GL2.GL_UNSIGNED_BYTE,
+			buffer
+		);
+	}
+	
+	/**
+	 * Sends a subset of data to the currently-bound 2D texture already in OpenGL's memory.
+	 * @param image the image to send.
+	 * @param xoffs the texel offset.
+	 * @param yoffs the texel offset.
+	 */
+	public void setTextureSubData2D(BufferedImage image, int xoffs, int yoffs)
+	{
+		Buffer buffer = OGLGraphicUtils.getByteData(image);
+		gl.glTexSubImage2D(
+			GL2.GL_TEXTURE_2D,
+			0,
+			xoffs,
+			yoffs,
+			image.getWidth(),
+			image.getHeight(),
+			GL2.GL_BGRA,
+			GL2.GL_UNSIGNED_BYTE,
+			buffer
+		);
+	}
+	
 	/**
 	 * Unbinds a two-dimensional texture from the current texture unit.
 	 */
@@ -1983,11 +2165,103 @@ public class OGLGraphics
 	 * Binds a texture cube object to the current active texture unit.
 	 * @param texture the texture to bind.
 	 */
-	public void setTextureCube(OGLTextureCube texture)
+	public void setTextureCube(OGLTexture texture)
 	{
 		gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, texture.getGLId());
 	}
 
+	/**
+	 * Sets the current filtering for the current CubeMap texture.
+	 * @param minFilter the minification filter.
+	 * @param magFilter the magnification filter.
+	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
+	 * @param genMipmaps if this generates mipmaps automatically.
+	 */
+	public void setTextureFilteringCube(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean genMipmaps)
+	{
+		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
+    	gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, magFilter.glid);
+		gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, minFilter.glid);
+		gl.glTexParameterf(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+    	gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_GENERATE_MIPMAP, genMipmaps ? GL2.GL_TRUE : GL2.GL_FALSE);
+	}
+
+	/**
+	 * Sets the current wrapping for the current CubeMap texture.
+	 * @param wrapS the wrapping mode, S-axis.
+	 * @param wrapT the wrapping mode, T-axis.
+	 * @param wrapR the wrapping mode, R-axis.
+	 */
+	public void setTextureWrappingCube(TextureWrapType wrapS, TextureWrapType wrapT, TextureWrapType wrapR)
+	{
+		gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_S, wrapS.glid);
+		gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_T, wrapT.glid);
+		gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_R, wrapR.glid);
+	}
+	
+	/**
+	 * Sends a texture into OpenGL's memory for the current CubeMap texture.
+	 * @param face the cube face to set.
+	 * @param image the image to send.
+	 * @param format the internal format.
+	 * @param border the pixel border to add, if any.
+	 */
+	public void setTextureDataCube(TextureCubeFace face, BufferedImage image, TextureFormat format, int border)
+	{
+		if (image.getWidth() > getMaxTextureSize() || image.getHeight() > getMaxTextureSize())
+			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
+		
+		Buffer buffer = null;
+		int imgWidth = image.getWidth();
+		int imgHeight = image.getHeight();
+
+		if (!OGLGraphicUtils.hasPowerOfTwoDimensions(image))
+		{
+			imgWidth = RMath.closestPowerOfTwo(image.getWidth());
+			imgHeight = RMath.closestPowerOfTwo(image.getHeight());
+			buffer = OGLGraphicUtils.getByteData(OGLGraphicUtils.performResizeBilinear(image, imgWidth, imgHeight)); 
+		}
+		else
+		{
+			buffer = OGLGraphicUtils.getByteData(image);	
+		}
+
+		gl.glTexImage2D(
+			face.glValue,
+			0,
+			format.glid, 
+			imgWidth,
+			imgHeight,
+			border,
+			GL2.GL_BGRA,
+			GL2.GL_UNSIGNED_BYTE,
+			buffer
+		);
+	}
+	
+	/**
+	 * Sends a subset of data to the currently-bound CubeMap texture already in OpenGL's memory.
+	 * @param face the cube face to set.
+	 * @param image the image to send.
+	 * @param xoffs the texel offset.
+	 * @param yoffs the texel offset.
+	 */
+	public void setTextureSubDataCube(TextureCubeFace face, BufferedImage image, int xoffs, int yoffs)
+	{
+		Buffer buffer = OGLGraphicUtils.getByteData(image);
+		gl.glTexSubImage2D(
+			face.glValue,
+			0,
+			xoffs,
+			yoffs,
+			image.getWidth(),
+			image.getHeight(),
+			GL2.GL_BGRA,
+			GL2.GL_UNSIGNED_BYTE,
+			buffer
+		);
+	}
+	
 	/**
 	 * Unbinds a texture cube from the current texture unit.
 	 */
@@ -2049,11 +2323,104 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Creates a new display list.
+	 * @return a new, uninitialized display list object.
+	 * @throws GraphicsException if the object could not be created.
+	 */
+	public OGLDisplayList createList()
+	{
+		return new OGLDisplayList(this);
+	}
+	
+	/**
+	 * Initializes a display list for compiling draw commands.
+	 * While one list is started, another one cannot be.
+	 * NOTE: Not all calls to OGLGraphics can be encapsulated in a list!
+	 * @param list the list object to start.
+	 * @throws GraphicsException if another list has already been started, but not ended.
+	 */
+	public void startList(OGLDisplayList list)
+	{
+		if (currentDisplayList != null)
+			throw new GraphicsException("A list has already been started.");
+		clearError();
+		gl.glNewList(list.getGLId(), GL2.GL_COMPILE);
+		getError();
+		currentDisplayList = list;
+	}
+	
+	/**
+	 * Ends the current list for compiling draw commands.
+	 * Cannot end a list without starting one.
+	 * @throws GraphicsException if another list has not been started, 
+	 * or this is called when a different list was started.
+	 */
+	public void endList()
+	{
+		if (currentDisplayList == null)
+			throw new GraphicsException("Attempt to end list without starting one.");
+		gl.glEndList();
+		currentDisplayList = null;
+	}
+	
+	/**
+	 * Creates a new occlusion query.
+	 * @return a new occlusion query object.
+	 * @throws GraphicsException if the object could not be created.
+	 */
+	public OGLOcclusionQuery createQuery()
+	{
+		return new OGLOcclusionQuery(this);
+	}
+	
+	/**
+	 * Starts the occlusion query.
+	 * Between startQuery() and endQuery(), geometry is drawn, and the amount of samples
+	 * that pass the depth/stencil test get counted, so make sure the depth/stencil test is enabled!
+	 * <p>
+	 * Two queries cannot overlap each other, or an exception will be thrown! 
+	 * @param query the query to start.
+	 * @throws GraphicsException if a query is already in progress.
+	 */
+	public void startQuery(OGLOcclusionQuery query)
+	{
+		if (currentOcclusionQuery != null)
+			throw new GraphicsException("An occlusion query is already active.");
+		gl.glBeginQuery(GL2.GL_SAMPLES_PASSED, query.getGLId());
+		currentOcclusionQuery = query;
+	}
+
+	/**
+	 * Ends the occlusion query.
+	 * Between startQuery() and endQuery(), geometry is drawn, and the amount of samples
+	 * that pass the depth/stencil test get counted, so make sure the depth/stencil test is enabled!
+	 * <p>
+	 * Two queries cannot overlap each other, or an exception will be thrown! 
+	 */
+	public void endQuery()
+	{
+		if (currentOcclusionQuery == null)
+			throw new GraphicsException("Attempt to end query without starting one.");
+		gl.glEndQuery(GL2.GL_SAMPLES_PASSED);
+		currentOcclusionQuery = null;
+	}
+
+	/**
+	 * Creates a new buffer object.
+	 * @return a new, uninitialized buffer object.
+	 * @throws GraphicsException if the object could not be created.
+	 */
+	public OGLBuffer createBuffer()
+	{
+		return new OGLBuffer(this);
+	}
+	
+	/**
 	 * Binds a buffer to the current context.
 	 * @param type the buffer type to bind.
 	 * @param buffer the buffer to bind.
 	 */
-	public void setBuffer(BufferType type, OGLBuffer<?> buffer)
+	public void setBuffer(BufferType type, OGLBuffer buffer)
 	{
 		gl.glBindBuffer(type.glValue, buffer.getGLId());
 	}
@@ -2201,7 +2568,7 @@ public class OGLGraphics
 
 	/**
 	 * Copies the contents of the current read frame buffer into a two-dimensional texture.
-	 * @param t			the texture object.
+	 * @param texture	the texture object.
 	 * @param texlevel	the mipmapping level to copy this into (0 is normal, no mipmapping).
 	 * @param xoffset	the offset in pixels on this texture (x-coordinate) to put this texture data.
 	 * @param yoffset	the offset in pixels on this texture (y-coordinate) to put this texture data.
@@ -2210,7 +2577,7 @@ public class OGLGraphics
 	 * @param width		the width of the screen in pixels to grab.
 	 * @param height	the height of the screen in pixels to grab.
 	 */
-	public void copyBufferToCurrentTexture(OGLTexture2D t, int texlevel, int xoffset, int yoffset, int srcX, int srcY, int width, int height)
+	public void copyBufferToCurrentTexture2D(OGLTexture texture, int texlevel, int xoffset, int yoffset, int srcX, int srcY, int width, int height)
 	{
 		gl.glCopyTexSubImage2D(GL2.GL_TEXTURE_2D, texlevel, xoffset, yoffset, srcX, srcY, width, height);
 	}

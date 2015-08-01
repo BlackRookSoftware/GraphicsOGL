@@ -10,8 +10,9 @@ package com.blackrook.ogl.object.framebuffer;
 import javax.media.opengl.*;
 
 import com.blackrook.ogl.OGLGraphics;
-import com.blackrook.ogl.object.OGLObject;
-import com.blackrook.ogl.object.texture.OGLTexture2D;
+import com.blackrook.ogl.OGLObject;
+import com.blackrook.ogl.OGLTexture;
+import com.blackrook.ogl.enums.AttachPoint;
 
 /**
  * Framebuffer object for whatever the hell you wanna do with off-screen rendering.
@@ -31,38 +32,6 @@ public class OGLFrameBuffer extends OGLObject
 		UNDELETED_LENGTH = 0;
 	}
 
-	private int[] glStateNum;
-
-	/**
-	 * Describes a list of possible frame buffer attachments.
-	 * @author Matthew Tropiano
-	 */
-	public enum AttachPoint
-	{
-		COLOR0(GL2.GL_COLOR_ATTACHMENT0),
-		COLOR1(GL2.GL_COLOR_ATTACHMENT1),
-		COLOR2(GL2.GL_COLOR_ATTACHMENT2),
-		COLOR3(GL2.GL_COLOR_ATTACHMENT3),
-		COLOR4(GL2.GL_COLOR_ATTACHMENT4),
-		COLOR5(GL2.GL_COLOR_ATTACHMENT5),
-		COLOR6(GL2.GL_COLOR_ATTACHMENT6),
-		COLOR7(GL2.GL_COLOR_ATTACHMENT7),
-		COLOR8(GL2.GL_COLOR_ATTACHMENT8),
-		COLOR9(GL2.GL_COLOR_ATTACHMENT9),
-		COLOR10(GL2.GL_COLOR_ATTACHMENT10),
-		COLOR11(GL2.GL_COLOR_ATTACHMENT11),
-		COLOR12(GL2.GL_COLOR_ATTACHMENT12),
-		COLOR13(GL2.GL_COLOR_ATTACHMENT13),
-		COLOR14(GL2.GL_COLOR_ATTACHMENT14),
-		COLOR15(GL2.GL_COLOR_ATTACHMENT15),
-		DEPTH(GL2.GL_DEPTH_ATTACHMENT),
-		STENCIL(GL2.GL_STENCIL_ATTACHMENT);
-		
-		public final int glVal;
-		AttachPoint(int gltype) 
-			{glVal = gltype;}
-	}
-	
 	/**
 	 * Constructs a new FrameBuffer object.
 	 */
@@ -86,7 +55,7 @@ public class OGLFrameBuffer extends OGLObject
 	{
 		glStateNum[0] = getGLId();
 		g.clearError();
-		g.getGL().glDeleteFramebuffers(1,glStateNum,0);
+		g.getGL().glDeleteFramebuffers(1, glStateNum, 0);
 		g.getError();
 		return true;
 	}
@@ -99,7 +68,7 @@ public class OGLFrameBuffer extends OGLObject
 	 * @param attachPoint the attachment source point for this texture.
 	 * @param texture the texture to attach this to.
 	 */
-	public void attachToTexture2D(OGLGraphics g, AttachPoint attachPoint, OGLTexture2D texture)
+	public void attachToTexture2D(OGLGraphics g, AttachPoint attachPoint, OGLTexture texture)
 	{
 		bindTo(g);
 		g.getGL().glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_TEXTURE_2D, texture.getGLId(), 0);

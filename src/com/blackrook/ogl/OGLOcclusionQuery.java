@@ -5,13 +5,9 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object.query;
+package com.blackrook.ogl;
 
 import javax.media.opengl.*;
-
-import com.blackrook.ogl.OGLGraphics;
-import com.blackrook.ogl.exception.GraphicsException;
-import com.blackrook.ogl.object.OGLObject;
 
 /**
  * An encapsulation of an occlusion query object for OpenGL.
@@ -23,15 +19,9 @@ public class OGLOcclusionQuery extends OGLObject
 	protected static int[] UNDELETED_IDS;
 	/** Amount of OpenGL object ids that were not deleted properly. */
 	protected static int UNDELETED_LENGTH;
-	/** Reference to current running query. */
-	private static OGLOcclusionQuery currentQuery;
 	
-	/** OpenGL temp variable. */
-	protected int[] glStateNum;
-
 	static
 	{
-		currentQuery = null;
 		UNDELETED_IDS = new int[INIT_UNALLOC_SIZE];
 		UNDELETED_LENGTH = 0;
 	}
@@ -40,7 +30,7 @@ public class OGLOcclusionQuery extends OGLObject
 	 * Creates a new Occlusion Query object handle.
 	 * @param g the graphics context to use.
 	 */
-	public OGLOcclusionQuery(OGLGraphics g)
+	OGLOcclusionQuery(OGLGraphics g)
 	{
 		super(g);
 	}
@@ -65,41 +55,6 @@ public class OGLOcclusionQuery extends OGLObject
 		return true;
 	}
 	
-	/**
-	 * Starts the occlusion query.
-	 * Between startQuery() and endQuery(), geometry is drawn, and the amount of samples
-	 * that pass the depth/stencil test get counted, so make sure the depth/stencil test is enabled!
-	 * <p>
-	 * Two queries cannot overlap each other, or an exception will be thrown! 
-	 * @param g the graphics context to use.
-	 * @throws GraphicsException if a query is already in progress.
-	 */
-	public void startQuery(OGLGraphics g)
-	{
-		if (currentQuery != null)
-			throw new GraphicsException("An occlusion query is already active.");
-		g.getGL().glBeginQuery(GL2.GL_SAMPLES_PASSED, getGLId());
-		currentQuery = this;
-	}
-
-	/**
-	 * Ends the occlusion query.
-	 * Between startQuery() and endQuery(), geometry is drawn, and the amount of samples
-	 * that pass the depth/stencil test get counted, so make sure the depth/stencil test is enabled!
-	 * <p>
-	 * Two queries cannot overlap each other, or an exception will be thrown! 
-	 * @param g the graphics context to use.
-	 */
-	public void endQuery(OGLGraphics g)
-	{
-		if (currentQuery == null)
-			throw new GraphicsException("Attempt to end query without starting one.");
-		if (currentQuery != this)
-			throw new GraphicsException("Attempt to end different query before ending current.");
-		g.getGL().glEndQuery(GL2.GL_SAMPLES_PASSED);
-		currentQuery = null;
-	}
-
 	/**
 	 * Returns true if this query's results are available, false otherwise.
 	 * @param g the graphics context to use.

@@ -5,15 +5,9 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object.list;
+package com.blackrook.ogl;
 
-import javax.media.opengl.*;
-
-import com.blackrook.ogl.OGLDrawable;
-import com.blackrook.ogl.OGLGraphics;
 import com.blackrook.ogl.exception.GraphicsException;
-import com.blackrook.ogl.object.OGLObject;
-
 
 /**
  * Display list functionality for OpenGL calls and objects.
@@ -26,33 +20,17 @@ public class OGLDisplayList extends OGLObject implements OGLDrawable
 	/** Amount of OpenGL object ids that were not deleted properly. */
 	protected static int UNDELETED_LENGTH;
 	
-	/** Current id of the display list in . */
-	private static OGLDisplayList currentList; 
-	
 	static
 	{
-		currentList = null;
 		UNDELETED_IDS = new int[INIT_UNALLOC_SIZE];
 		UNDELETED_LENGTH = 0;
 	}
 	
 	/**
-	 * Creates a new DisplayList, compiling it using the procedures in an 
-	 * @throws GraphicsException if memory could not be allocated for the list.
-	 */
-	public OGLDisplayList(OGLGraphics g, OGLDrawable d)
-	{
-		super(g);
-		startList(g);
-		d.drawUsing(g);
-		endList(g);
-	}
-
-	/**
 	 * Creates a new, empty DisplayList.
 	 * @throws GraphicsException if memory could not be allocated for the list.
 	 */
-	public OGLDisplayList(OGLGraphics g)
+	OGLDisplayList(OGLGraphics g)
 	{
 		super(g);
 	}
@@ -75,36 +53,6 @@ public class OGLDisplayList extends OGLObject implements OGLDrawable
 		return true;
 	}
 
-	/**
-	 * Initializes the list for compiling draw commands.
-	 * While one list is started, another one cannot be.
-	 * NOTE: Not all calls to OGLGraphics can be encapsulated in a list!
-	 * @throws GraphicsException if another list has already been started, but not ended.
-	 */
-	public void startList(OGLGraphics g)
-	{
-		if (currentList != null)
-			throw new GraphicsException("A list has already been started.");
-		g.getGL().glNewList(getGLId(), GL2.GL_COMPILE);
-		currentList = this;
-	}
-	
-	/**
-	 * Ends the current list for compiling draw commands.
-	 * Cannot end a list without starting one.
-	 * @throws GraphicsException if another list has not been started, 
-	 * or this is called when a different list was started.
-	 */
-	public void endList(OGLGraphics g)
-	{
-		if (currentList == null)
-			throw new GraphicsException("Attempt to end list without starting one.");
-		if (currentList != this)
-			throw new GraphicsException("Attempt to end different list before ending current.");
-		g.getGL().glEndList();
-		currentList = null;
-	}
-	
 	/**
 	 * Calls this list.
 	 */

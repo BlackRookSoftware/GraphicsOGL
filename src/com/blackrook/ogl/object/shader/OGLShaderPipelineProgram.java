@@ -10,8 +10,8 @@ package com.blackrook.ogl.object.shader;
 import javax.media.opengl.*;
 
 import com.blackrook.ogl.OGLGraphics;
+import com.blackrook.ogl.OGLObject;
 import com.blackrook.ogl.exception.GraphicsException;
-import com.blackrook.ogl.object.OGLObject;
 
 
 /**
@@ -99,6 +99,14 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 	}
 
 	/**
+	 * Returns the log from this program's compiling.
+	 */
+	public String getLog()
+	{
+		return log;
+	}
+
+	/**
 	 * Destroys undeleted programs abandoned from destroyed Java objects.
 	 */
 	public static void destroyUndeleted(OGLGraphics g)
@@ -109,14 +117,6 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 				g.getGL().glDeleteShader(UNDELETED_IDS[i]);
 			UNDELETED_LENGTH = 0;
 		}
-	}
-
-	/**
-	 * Returns the log from this program's compiling.
-	 */
-	public String getLog()
-	{
-		return log;
 	}
 
 	// adds the OpenGL Id to the UNDELETED_IDS list.

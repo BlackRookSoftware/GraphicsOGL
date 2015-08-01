@@ -14,6 +14,7 @@ import javax.media.opengl.*;
 import com.blackrook.commons.list.List;
 import com.blackrook.commons.math.geometry.Point2F;
 import com.blackrook.commons.math.geometry.Point3F;
+import com.blackrook.ogl.OGLBuffer;
 import com.blackrook.ogl.OGLGeometryUtils;
 import com.blackrook.ogl.OGLGraphics;
 import com.blackrook.ogl.OGLMesh;
@@ -22,8 +23,8 @@ import com.blackrook.ogl.data.OGLColor;
 import com.blackrook.ogl.enums.AccessType;
 import com.blackrook.ogl.enums.BufferType;
 import com.blackrook.ogl.enums.CachingHint;
+import com.blackrook.ogl.enums.DataType;
 import com.blackrook.ogl.enums.GeometryType;
-import com.blackrook.ogl.object.buffer.OGLFloatBuffer;
 
 /**
  * A drawable polygon type that holds a sequence of points, texture coordinates, 
@@ -228,7 +229,7 @@ public class PolygonMesh implements OGLMesh
 	public class PolygonView extends MeshView
 	{
 		/** The buffer that holds geometry. */
-		private OGLFloatBuffer geometryBuffer;
+		private OGLBuffer geometryBuffer;
 		/** The geometry drawing directives. */
 		private GeometryInfo[] geometryInfo;
 
@@ -408,7 +409,7 @@ public class PolygonMesh implements OGLMesh
 			}
 		
 			if (geometryBuffer != null)
-				OGLGeometryUtils.drawInterleavedGeometry(g, geometryBuffer, getGeometryType(), getElementCount(), geometryInfo);
+				OGLGeometryUtils.drawInterleavedGeometry(g, geometryBuffer, DataType.FLOAT, getGeometryType(), getElementCount(), geometryInfo);
 		}
 
 		/**
@@ -418,11 +419,15 @@ public class PolygonMesh implements OGLMesh
 		protected void rebuildBuffer(OGLGraphics g)
 		{
 			if (geometryBuffer == null)
-				geometryBuffer = new OGLFloatBuffer(g, BufferType.GEOMETRY);
-			geometryBuffer.setCapacity(g, CachingHint.STATIC_DRAW, geometryBufferCapacity);
+				geometryBuffer = g.createBuffer();
+			
+			g.setBufferCapacity(BufferType.GEOMETRY, CachingHint.STATIC_DRAW, DataType.FLOAT, geometryBufferCapacity);
 		
 			int offs = 0;
-			FloatBuffer fb = geometryBuffer.mapBuffer(g, AccessType.WRITE);
+			
+			g.setBuffer(BufferType.GEOMETRY, geometryBuffer);
+			FloatBuffer fb = g.mapFloatBuffer(BufferType.GEOMETRY, AccessType.WRITE);
+			
 			if (vertices != null)
 			{
 				getVertices(fb, 0, 3, offs, geometryElementWidth);
@@ -444,7 +449,8 @@ public class PolygonMesh implements OGLMesh
 				getColors(fb, 0, 4, offs, geometryElementWidth);
 				offs += 4;
 			}
-			geometryBuffer.unmapBuffer(g);
+			
+			g.unmapBuffer(BufferType.GEOMETRY);
 		}
 		
 	}
