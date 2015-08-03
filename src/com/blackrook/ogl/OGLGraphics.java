@@ -8,6 +8,10 @@
 package com.blackrook.ogl;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -726,6 +730,8 @@ public class OGLGraphics
 	 */
 	public void clearError()
 	{
+		if (errorIgnoring)
+			return;
 		while (gl.glGetError() != GL2.GL_NO_ERROR);
 	}
 
@@ -735,16 +741,31 @@ public class OGLGraphics
 	 */
 	public void getError()
 	{
+		if (errorIgnoring)
+			return;
 		int error = gl.glGetError();
 		if (error != GL2.GL_NO_ERROR)
 			throw new GraphicsException("OpenGL raised error: "+glu.gluErrorString(error));
 	}
 
-	public boolean isErrorIgnoring() {
+	/**
+	 * Gets if this completely ignores OpenGL error detection.
+	 * If true, this could be reducing the amount of OpenGL calls this makes.
+	 * @return true if so, false if not.
+	 * @see #setErrorIgnoring(boolean)
+	 */
+	public boolean isErrorIgnoring() 
+	{
 		return errorIgnoring;
 	}
 
-	public void setErrorIgnoring(boolean errorIgnoring) {
+	/**
+	 * Sets if this completely ignores OpenGL error detection.
+	 * If true, this could reduce the amount of OpenGL calls this makes.
+	 * @param errorIgnoring if true, {@link #clearError()} and {@link #getError()} do nothing. Else, they do stuff.
+	 */
+	public void setErrorIgnoring(boolean errorIgnoring)
+	{
 		this.errorIgnoring = errorIgnoring;
 	}
 
@@ -2364,6 +2385,80 @@ public class OGLGraphics
 		gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP,0);
 	}
 
+	/**
+	 * Creates a new shader program object (vertex, fragment, etc.).
+	 * @param type the program type. if not a valid program type, this throws an exception.
+	 * @param file the source file to read for compiling.
+	 * @return the instantiated program.
+	 * @throws NullPointerException if file is null.
+	 * @throws IOException if the source of the source code can't be read.
+	 * @throws FileNotFoundException if the source file does not exist.
+	 */
+	public OGLShaderProgram createShaderProgram(ShaderProgramType type, File file) throws IOException
+	{
+		switch (type)
+		{
+			case VERTEX:
+				return new OGLShaderProgramVertex(this, file);
+			case GEOMETRY:
+				return new OGLShaderProgramGeometry(this, file);
+			case FRAGMENT:
+				return new OGLShaderProgramFragment(this, file);
+			default:
+				throw new GraphicsException("Bad shader program type.");
+		}
+	}
+	
+	/**
+	 * Creates a new shader program object (vertex, fragment, etc.).
+	 * @param type the program type. if not a valid program type, this throws an exception.
+	 * @param streamName the name of the stream (can appear in exceptions).
+	 * @param in the input stream.
+	 * @return the instantiated program.
+	 * @throws NullPointerException if file is null.
+	 * @throws IOException if the source of the source code can't be read.
+	 * @throws FileNotFoundException if the source file does not exist.
+	 */
+	public OGLShaderProgram createShaderProgram(ShaderProgramType type, String streamName, InputStream in) throws IOException
+	{
+		switch (type)
+		{
+			case VERTEX:
+				return new OGLShaderProgramVertex(this, streamName, in);
+			case GEOMETRY:
+				return new OGLShaderProgramGeometry(this, streamName, in);
+			case FRAGMENT:
+				return new OGLShaderProgramFragment(this, streamName, in);
+			default:
+				throw new GraphicsException("Bad shader program type.");
+		}
+	}
+	
+	/**
+	 * Creates a new shader program object (vertex, fragment, etc.).
+	 * @param type the program type. if not a valid program type, this throws an exception.
+	 * @param streamName the name of the originating stream (can appear in exceptions).
+	 * @param sourceCode the code to compile.
+	 * @return the instantiated program.
+	 * @throws NullPointerException if file is null.
+	 * @throws IOException if the source of the source code can't be read.
+	 * @throws FileNotFoundException if the source file does not exist.
+	 */
+	public OGLShaderProgram createShaderProgram(ShaderProgramType type, String streamName, String sourceCode) throws IOException
+	{
+		switch (type)
+		{
+			case VERTEX:
+				return new OGLShaderProgramVertex(this, streamName, sourceCode);
+			case GEOMETRY:
+				return new OGLShaderProgramGeometry(this, streamName, sourceCode);
+			case FRAGMENT:
+				return new OGLShaderProgramFragment(this, streamName, sourceCode);
+			default:
+				throw new GraphicsException("Bad shader program type.");
+		}
+	}
+	
 	/**
 	 * Creates a new shader object.
 	 * @param programs the programs to attach.
