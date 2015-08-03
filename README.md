@@ -1,6 +1,6 @@
 # Black Rook OpenGL
 
-Copyright (c) 2014 Black Rook Software. All rights reserved.  
+Copyright (c) 2014-2015 Black Rook Software. All rights reserved.  
 [http://blackrooksoftware.com/projects.htm?name=graphicsogl](http://blackrooksoftware.com/projects.htm?name=graphicsogl)  
 [https://github.com/BlackRookSoftware/GraphicsOGL](https://github.com/BlackRookSoftware/GraphicsOGL)
 
@@ -16,9 +16,6 @@ may change many times in different ways over the course of its development!
 
 Black Rook Commons 2.20.0+  
 [https://github.com/BlackRookSoftware/Common](https://github.com/BlackRookSoftware/Common)
-
-Black Rook Common I/O 2.4.0+  
-[https://github.com/BlackRookSoftware/CommonIO](https://github.com/BlackRookSoftware/CommonIO)
 
 GlueGen  
 [http://jogamp.org/git/?p=gluegen.git](http://jogamp.org/git/?p=gluegen.git)
