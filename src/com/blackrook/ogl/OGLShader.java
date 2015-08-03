@@ -174,13 +174,10 @@ public class OGLShader extends OGLObject
 
 		g.clearError();
 		
-		if (Common.coalesce(vertexProgram, fragmentProgram, geometryProgram) == null)
-			throw new GraphicsException("All provided programs are null!");
-		
 		// Get programs.
 		for (OGLShaderProgram program : programs)
 		{
-			switch (program.getType())
+			if (program != null) switch (program.getType())
 			{
 				case VERTEX:
 					if (vertexProgram != null)
@@ -204,6 +201,9 @@ public class OGLShader extends OGLObject
 					break;
 			}
 		}
+		
+		if (Common.coalesce(vertexProgram, fragmentProgram, geometryProgram) == null)
+			throw new GraphicsException("All provided programs are null!");
 		
 		// attach the programs.
 		if (vertexProgram != null)
@@ -267,10 +267,10 @@ public class OGLShader extends OGLObject
 			
 			uniformLocationList[i] = new Uniform();
 			uniformLocationList[i].locationId = i;
-			try {
-				uniformLocationList[i].name = new String(name, "UTF-8");
-			} catch (UnsupportedEncodingException e) {/* should not happen. */}
 			uniformLocationList[i].length = length[0];
+			try {
+				uniformLocationList[i].name = new String(name, 0, uniformLocationList[i].length, "UTF-8");
+			} catch (UnsupportedEncodingException e) {/* should not happen. */}
 			uniformLocationList[i].size = size[0];
 			uniformLocationList[i].type = type[0];
 			uniformLocationList[i].typeName = TYPENAMES.get(type[0]);
@@ -303,6 +303,14 @@ public class OGLShader extends OGLObject
 		return log;
 	}
 	
+	/**
+	 * @return the number of uniforms on this shader.
+	 */
+	public int getUniformCount()
+	{
+		return uniformLocationList.length;
+	}
+
 	/**
 	 * Gets a {@link Uniform} by its location id.
 	 * @param locationId the location id.
@@ -367,11 +375,11 @@ public class OGLShader extends OGLObject
 		private int locationId;
 		/** Uniform name. */
 		private String name;
-		/** Uniform length. */
+		/** Uniform character length. */
 		private int length;
-		/** Uniform size. */
+		/** Uniform size (in positions). */
 		private int size;
-		/** Uniform type. */
+		/** Uniform type (GL value). */
 		private int type;
 		/** Uniform type. */
 		private String typeName;
