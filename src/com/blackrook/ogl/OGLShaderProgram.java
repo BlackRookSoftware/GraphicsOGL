@@ -5,20 +5,18 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object.shader;
+package com.blackrook.ogl;
 
 import javax.media.opengl.*;
 
-import com.blackrook.ogl.OGLGraphics;
-import com.blackrook.ogl.OGLObject;
+import com.blackrook.ogl.enums.ShaderProgramType;
 import com.blackrook.ogl.exception.GraphicsException;
-
 
 /**
  * GLSL Shader program.
  * @author Matthew Tropiano
  */
-public abstract class OGLShaderPipelineProgram extends OGLObject
+public abstract class OGLShaderProgram extends OGLObject
 {
 	/** List of OpenGL object ids that were not deleted properly. */
 	protected static int[] UNDELETED_IDS;
@@ -32,7 +30,7 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 	}
 
 	/** Shader program type. */
-	protected int glType;
+	private ShaderProgramType type;
 	/** Compile log. */
 	protected String log;
 
@@ -40,11 +38,10 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 	 * Protected constructor for the program class.
 	 * @param g the OGLGraphics instance to use.
 	 */
-	protected OGLShaderPipelineProgram(OGLGraphics g)
+	OGLShaderProgram(OGLGraphics g, ShaderProgramType type)
 	{
 		super(g);
-		if (glType != GL2.GL_VERTEX_SHADER && glType != GL2.GL_FRAGMENT_SHADER && glType != GL2.GL_GEOMETRY_PROGRAM_NV)
-			throw new GraphicsException("Shader program not designated as vertex, geometry, or fragment.");
+		this.type = type;
 	}
 
 	/**
@@ -56,14 +53,14 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 	protected void construct(OGLGraphics g, String streamName, String sourceCode)
 	{
 		GL2 gl = g.getGL();
-
 		g.clearError();
 		gl.glShaderSource(getGLId(), 1, new String[]{sourceCode}, (int[])null, 0);
-		compile(streamName, g);
+		compile(g, streamName);
 		g.getError();
 	}
 	
-	private void compile(String streamName, OGLGraphics g)
+	// Compiles the program.
+	private void compile(OGLGraphics g, String streamName)
 	{
 		GL2 gl = g.getGL();
 		int[] compCheck = new int[1];
@@ -74,9 +71,7 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
         	throw new GraphicsException("Failed to compile \""+streamName+"\"\n"+log);
 	}
 
-	/**
-	 * Reads and returns the log from this program's compilation.
-	 */
+	// Reads and returns the log from this program's compilation.
 	private String readLog(OGLGraphics g)
 	{
 		GL2 gl = g.getGL();
@@ -99,6 +94,14 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 	}
 
 	/**
+	 * Gets the shader type.
+	 */
+	public ShaderProgramType getType()
+	{
+		return type;
+	}
+	
+	/**
 	 * Returns the log from this program's compiling.
 	 */
 	public String getLog()
@@ -109,7 +112,7 @@ public abstract class OGLShaderPipelineProgram extends OGLObject
 	/**
 	 * Destroys undeleted programs abandoned from destroyed Java objects.
 	 */
-	public static void destroyUndeleted(OGLGraphics g)
+	static void destroyUndeleted(OGLGraphics g)
 	{
 		if (UNDELETED_LENGTH > 0)
 		{

@@ -25,7 +25,6 @@ import com.blackrook.commons.math.RMath;
 import com.blackrook.ogl.data.*;
 import com.blackrook.ogl.enums.*;
 import com.blackrook.ogl.exception.GraphicsException;
-import com.blackrook.ogl.object.shader.OGLShaderProgram;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
@@ -90,8 +89,10 @@ public class OGLGraphics
 	
 	/** Maximum bindable lights. */
 	private int maxLights;
-	/** Maximum texture image units. */
-	private int maxTextureImageUnits;
+	/** Maximum texture units. */
+	private int maxMultitexture;
+	/** Maximum texture units. */
+	private int maxTextureUnits;
 	/** Maximum texture size. */
 	private int maxTextureSize;
 	/** Maximum renderbuffer size. */
@@ -109,9 +110,6 @@ public class OGLGraphics
 	/** Maximum line width range. */
 	private float maxLineWidth;
 	
-	private int[] INT_STATE;
-	private float[] FLOAT_STATE;
-	
 	/** The current frame rendered. */
 	private long currentFrame;
 	/** The current millisecond at the beginning of the frame. */
@@ -125,12 +123,20 @@ public class OGLGraphics
 
 	/** Last frame nanotime. */
 	private long lastTimeNanos;
+	/** Time between frames. */
+	private long currentTimeStepNanos;
 	
 	/** Current display list. */
 	private OGLDisplayList currentDisplayList; 
 	/** Current running occlusion query. */
 	private OGLOcclusionQuery currentOcclusionQuery;
 
+	private int[] INT_STATE;
+	private float[] FLOAT_STATE;
+	
+	/** Completely ignore error checking requests? */
+	private boolean errorIgnoring;
+	
 	/**
 	 * Creates a new OGLGraphics context.
 	 * @param system the source system.
@@ -168,24 +174,27 @@ public class OGLGraphics
 		
 		currentFrame = 0L;
 		currentTimeStepMillis = -1f;
+		currentTimeStepNanos = -1L;
 	}
 
 	/**
-	 * Called at the beginning of each display() call for each
-	 * frame.
-	 * @param interpolant the interpolant factor to use.
+	 * Called at the beginning of each display() call for each frame.
 	 */
-	void beginFrame()
+	final void beginFrame()
 	{
 		currentMilliseconds = System.currentTimeMillis();
 		currentNanos = System.nanoTime();
 		
 		if (currentTimeStepMillis < 0.0f)
-			currentTimeStepMillis = 0.0f; 
+		{
+			currentTimeStepMillis = 0.0f;
+			currentTimeStepNanos = 0L;
+		}
 		else
 		{
 			long n = currentNanos - lastTimeNanos;
-			currentTimeStepMillis = (float)((double)(n)/1000000d); 
+			currentTimeStepNanos = n;
+			currentTimeStepMillis = (float)((double)(n)/1000000d);
 		}
 
 		lastTimeNanos = currentNanos;
@@ -193,6 +202,52 @@ public class OGLGraphics
 		currentFrame++;
 	}
 	
+	/**
+	 * Called on frame end - does object cleanup.
+	 */
+	final void endFrame() 
+	{
+	    // Clean up abandoned objects.
+	    OGLBuffer.destroyUndeleted(this);
+	    OGLDisplayList.destroyUndeleted(this);
+	    OGLFrameBuffer.destroyUndeleted(this);
+	    OGLRenderBuffer.destroyUndeleted(this);
+	    OGLOcclusionQuery.destroyUndeleted(this);
+	    OGLShader.destroyUndeleted(this);
+	    OGLShaderProgram.destroyUndeleted(this);
+	    OGLTexture.destroyUndeleted(this);
+	}
+
+	/**
+	 * Gets the current GL context.
+	 */
+	final GL2 getGL()
+	{
+		return gl;
+	}
+
+	/**
+	 * Gets the current GLU context.
+	 */
+	final GLU getGLU()
+	{
+		return glu;
+	}
+
+	/**
+	 * Gets the current GLUT context.
+	 */
+	final GLUT getGLUT()
+	{
+		return glut;
+	}
+
+	/** Returns a reference to the parent {@link OGLSystem} that created this. */
+	public final OGLSystem getSystem()
+	{
+		return glSystem;
+	}
+
 	/**
 	 * Sets the architecture flags.
 	 */
@@ -231,7 +286,8 @@ public class OGLGraphics
 		pointSpritesPresent = extensionIsPresent("gl_arb_point_sprite");
 
 		maxLights = getGLInt(GL2.GL_MAX_LIGHTS);
-		maxTextureImageUnits = getGLInt(GL2.GL_MAX_TEXTURE_IMAGE_UNITS_ARB);
+		maxMultitexture = getGLInt(GL2.GL_MAX_TEXTURE_UNITS);
+		maxTextureUnits = getGLInt(GL2.GL_MAX_TEXTURE_IMAGE_UNITS_ARB);
 		maxTextureSize = getGLInt(GL2.GL_MAX_TEXTURE_SIZE);
 		maxRenderBufferSize = getGLInt(GL2.GL_MAX_RENDERBUFFER_SIZE);
 		maxRenderBufferColorAttachments = getGLInt(GL2.GL_MAX_COLOR_ATTACHMENTS);
@@ -366,6 +422,16 @@ public class OGLGraphics
 	}
 	
 	/**
+	 * Gets the amount of milliseconds passed between this frame and the last one.
+	 * If this is the first frame, this is 0. If this is BEFORE the first frame,
+	 * this is -1f.
+	 */
+	public float currentTimeStepNanos()
+	{
+		return currentTimeStepNanos;
+	}
+	
+	/**
 	 * Current blitting bit.
 	 * This will alternate between true and false each frame.
 	 */
@@ -391,11 +457,19 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Get the maximum amount of texture units in a multitexturing pipeline.
+	 * Get the maximum amount of multitexture units.
 	 */
-	public final int getMaxTextureImageUnits()
+	public final int getMaxMultitexture()
 	{
-		return maxTextureImageUnits;
+		return maxMultitexture;
+	}
+
+	/**
+	 * Get the maximum amount of bindable texture units.
+	 */
+	public final int getMaxTextureUnits()
+	{
+		return maxTextureUnits;
 	}
 
 	/**
@@ -462,36 +536,6 @@ public class OGLGraphics
 		return maxLineWidth;
 	}
 
-	/**
-	 * Gets the current GL context.
-	 */
-	public final GL2 getGL()
-	{
-		return gl;
-	}
-
-	/**
-	 * Gets the current GLU context.
-	 */
-	public final GLU getGLU()
-	{
-		return glu;
-	}
-
-	/**
-	 * Gets the current GLUT context.
-	 */
-	public final GLUT getGLUT()
-	{
-		return glut;
-	}
-
-	/** Returns a reference to the parent {@link OGLSystem} that created this. */
-	public final OGLSystem getSystem()
-	{
-		return glSystem;
-	}
-	
 	/** Returns the rendering device of this GL system. */
 	public final String getGLRenderer()
 	{
@@ -634,28 +678,6 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Sets the OpenGL viewport (Note: (0,0) is the lower-left corner).
-	 * If any value is below zero, it is clamped to zero.
-	 * @param x			x-coordinate origin of the screen.
-	 * @param y			y-coordinate origin of the screen.
-	 * @param width		the width of the viewport in pixels.
-	 * @param height	the height of the viewport in pixels.
-	 */
-	public void setViewport(int x, int y, int width, int height)
-	{
-		gl.glViewport(Math.max(0,x), Math.max(0,y), Math.max(0,width), Math.max(0,height));
-	}
-	
-	/**
-	 * Convenience method for setting the viewport to the canvas's dimensions.<br/>
-	 * Equivalent to: <code>setViewport(0, 0, (int)getCanvasWidth(), (int)getCanvasHeight())</code>
-	 */
-	public void setViewportToCanvas()
-	{
-		setViewport(0, 0, (int)getCanvasWidth(), (int)getCanvasHeight());
-	}
-
-	/**
 	 * Gets the current X position of the mouse.
 	 * Convenience method for <code>getCanvas().getMouseX()</code>.
 	 */
@@ -716,6 +738,55 @@ public class OGLGraphics
 		int error = gl.glGetError();
 		if (error != GL2.GL_NO_ERROR)
 			throw new GraphicsException("OpenGL raised error: "+glu.gluErrorString(error));
+	}
+
+	public boolean isErrorIgnoring() {
+		return errorIgnoring;
+	}
+
+	public void setErrorIgnoring(boolean errorIgnoring) {
+		this.errorIgnoring = errorIgnoring;
+	}
+
+	/**
+	 * Sets if this has VSync enabled.
+	 * @param enabled if true, enables. false disables.
+	 */
+	public void setVSync(boolean enabled)
+	{
+		gl.setSwapInterval(enabled ? 1 : 0);
+	}
+
+	/**
+	 * Sets an OpenGL hint.
+	 * @param type the hint type to set.
+	 * @param value the value to set for the provided hint.
+	 */
+	public void setHint(HintType type, HintValue value)
+	{
+		gl.glHint(type.glValue, value.glValue);
+	}
+
+	/**
+	 * Sets the OpenGL viewport (Note: (0,0) is the lower-left corner).
+	 * If any value is below zero, it is clamped to zero.
+	 * @param x			x-coordinate origin of the screen.
+	 * @param y			y-coordinate origin of the screen.
+	 * @param width		the width of the viewport in pixels.
+	 * @param height	the height of the viewport in pixels.
+	 */
+	public void setViewport(int x, int y, int width, int height)
+	{
+		gl.glViewport(Math.max(0,x), Math.max(0,y), Math.max(0,width), Math.max(0,height));
+	}
+
+	/**
+	 * Convenience method for setting the viewport to the canvas's dimensions.<br/>
+	 * Equivalent to: <code>setViewport(0, 0, (int)getCanvasWidth(), (int)getCanvasHeight())</code>
+	 */
+	public void setViewportToCanvas()
+	{
+		setViewport(0, 0, (int)getCanvasWidth(), (int)getCanvasHeight());
 	}
 
 	/**
@@ -1938,8 +2009,8 @@ public class OGLGraphics
 	 */
 	public void setTextureUnit(int unit)
 	{
-		if (unit < 0 || unit > maxTextureImageUnits)
-			throw new GraphicsException("Illegal texture unit. Must be from 0 to "+(maxTextureImageUnits-1)+".");
+		if (unit < 0 || unit >= maxTextureUnits)
+			throw new GraphicsException("Illegal texture unit. Must be from 0 to "+(maxTextureUnits-1)+".");
 		gl.glActiveTexture(GL2.GL_TEXTURE0 + unit);
 	}
 	
@@ -1955,11 +2026,14 @@ public class OGLGraphics
 	
 	/**
 	 * Binds a 1D texture object to the current active texture unit.
-	 * @param texture the texture to bind.
+	 * @param texture the texture to bind. Null unbinds the current texture.
 	 */
 	public void setTexture1D(OGLTexture texture)
 	{
-		gl.glBindTexture(GL2.GL_TEXTURE_1D, texture.getGLId());
+		if (texture == null)
+			unsetTexture1D();
+		else
+			gl.glBindTexture(GL2.GL_TEXTURE_1D, texture.getGLId());
 	}
 	
 	/**
@@ -2056,11 +2130,14 @@ public class OGLGraphics
 
 	/**
 	 * Binds a 2D texture object to the current active texture unit.
-	 * @param texture the texture to bind.
+	 * @param texture the texture to bind. Null unbinds the current texture.
 	 */
 	public void setTexture2D(OGLTexture texture)
 	{
-		gl.glBindTexture(GL2.GL_TEXTURE_2D, texture.getGLId());
+		if (texture == null)
+			unsetTexture2D();
+		else
+			gl.glBindTexture(GL2.GL_TEXTURE_2D, texture.getGLId());
 	}
 
 	/**
@@ -2177,11 +2254,14 @@ public class OGLGraphics
 
 	/**
 	 * Binds a texture cube object to the current active texture unit.
-	 * @param texture the texture to bind.
+	 * @param texture the texture to bind. Null unbinds the current texture.
 	 */
 	public void setTextureCube(OGLTexture texture)
 	{
-		gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, texture.getGLId());
+		if (texture == null)
+			unsetTextureCube();
+		else
+			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, texture.getGLId());
 	}
 
 	/**
@@ -2285,20 +2365,149 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Binds a shader to the current context.
-	 * @param shader the shader to bind.
+	 * Creates a new shader object.
+	 * @param programs the programs to attach.
+	 * @return a new, linked shader object.
+	 * @throws GraphicsException if the object could not be created, or compilation/linking failed.
 	 */
-	public void setShaderProgram(OGLShaderProgram shader)
+	public OGLShader createShader(OGLShaderProgram ... programs)
 	{
-		gl.glUseProgramObjectARB(shader.getGLId());
+		return new OGLShader(this, programs);
+	}
+
+	/**
+	 * Binds a shader to the current context.
+	 * @param shader the shader to bind. Null unbinds the current shader.
+	 */
+	public void setShader(OGLShader shader)
+	{
+		if (shader == null)
+			unsetShader();
+		else
+			gl.glUseProgram(shader.getGLId());
+	}
+
+	/**
+	 * Sets a uniform integer value on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param value the value to set.
+	 */
+	public void setShaderUniformInt(int locationId, int value)
+	{
+		gl.glUniform1i(locationId, value);
+	}
+	
+	/**
+	 * Sets a uniform integer value array on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param values the values to set.
+	 */
+	public void setShaderUniformIntArray(int locationId, int ... values)
+	{
+		gl.glUniform1iv(locationId, values.length, values, 0);
+	}
+	
+	/**
+	 * Sets a uniform unsigned integer value on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param value the value to set.
+	 */
+	public void setShaderUniformIntUnsigned(int locationId, int value)
+	{
+		gl.glUniform1ui(locationId, value);
+	}
+	
+	/**
+	 * Sets a uniform unsigned integer value array on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param values the values to set.
+	 */
+	public void setShaderUniformIntUnsignedArray(int locationId, int ... values)
+	{
+		gl.glUniform1uiv(locationId, values.length, values, 0);
+	}
+	
+	/**
+	 * Sets a uniform float value on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param value the value to set.
+	 */
+	public void setShaderUniformFloat(int locationId, float value)
+	{
+		gl.glUniform1f(locationId, value);
+	}
+	
+	/**
+	 * Sets a uniform float array value on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param values the values to set.
+	 */
+	public void setShaderUniformFloatArray(int locationId, float ... values)
+	{
+		gl.glUniform1fv(locationId, values.length, values, 0);
+	}
+	
+	/**
+	 * Sets a uniform value on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param value0 the first value to set.
+	 * @param value1 the second value to set.
+	 */
+	public void setShaderUniformVec2(int locationId, float value0, float value1)
+	{
+		gl.glUniform2fv(locationId, 1, new float[]{value0, value1}, 0);
+	}
+	
+	/**
+	 * Sets a uniform value on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param value0 the first value to set.
+	 * @param value1 the second value to set.
+	 */
+	public void setShaderUniformVec3(int locationId, float value0, float value1, float value2)
+	{
+		gl.glUniform3fv(locationId, 1, new float[]{value0, value1, value2}, 0);
+	}
+	
+	/**
+	 * Sets a uniform value on the currently-bound shader.
+	 * @param locationId the uniform location.
+	 * @param value0 the first value to set.
+	 * @param value1 the second value to set.
+	 * @param value2 the third value to set.
+	 * @param value3 the fourth value to set.
+	 */
+	public void setShaderUniformVec4(int locationId, float value0, float value1, float value2, float value3)
+	{
+		gl.glUniform4fv(locationId, 1, new float[]{value0, value1, value2, value3}, 0);
+	}
+	
+	/**
+	 * Sets a uniform VEC2 with the current canvas dimensions. 
+	 * X is width in pixels, Y is height in pixels.
+	 * @param locationId the uniform location.
+	 */
+	public void setShaderUniformCanvas(int locationId)
+	{
+		setShaderUniformVec2(locationId, getCanvasWidth(), getCanvasHeight());
+	}
+	
+	/**
+	 * Sets a uniform VEC2 with the current mouse coordinates. 
+	 * X is X-coordinate on canvas, Y is Y-coordinate on canvas.
+	 * @param locationId the uniform location.
+	 */
+	public void setShaderUniformMouse(int locationId)
+	{
+		setShaderUniformVec2(locationId, getMouseX(), getMouseY());
 	}
 	
 	/**
 	 * Unbinds a shader from the current context.
 	 */
-	public void unsetShaderProgram()
+	public void unsetShader()
 	{
-		gl.glUseProgramObjectARB(0);
+		gl.glUseProgram(0);
 	}
 
 	/**
@@ -2312,12 +2521,15 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Binds a FrameRenderBuffer from the current context.
-	 * @param frameRenderBuffer the render buffer to bind to the current framebuffer.
+	 * Binds a FrameRenderBuffer to the current context.
+	 * @param frameRenderBuffer the render buffer to bind to the current render buffer. Null unbinds the current render buffer.
 	 */
 	public void setFrameRenderBuffer(OGLRenderBuffer frameRenderBuffer)
 	{
-		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, frameRenderBuffer.getGLId());
+		if (frameRenderBuffer == null)
+			unsetFrameRenderBuffer();
+		else
+			gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, frameRenderBuffer.getGLId());
 	}
 
 	/**
@@ -2353,11 +2565,14 @@ public class OGLGraphics
 
 	/**
 	 * Binds a FrameBuffer for rendering.
-	 * @param frameBuffer the framebuffer to set as the current one.
+	 * @param frameBuffer the framebuffer to set as the current one. Null unbinds the current framebuffer.
 	 */
 	public void setFrameBuffer(OGLFrameBuffer frameBuffer)
 	{
-		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, frameBuffer.getGLId());
+		if (frameBuffer == null)
+			unsetFrameBuffer();
+		else
+			gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, frameBuffer.getGLId());
 	}
 
 	/**
@@ -2406,48 +2621,48 @@ public class OGLGraphics
 
 	/**
 	 * Attaches a texture to this frame buffer for rendering directly to a texture.
-	 * NOTE: This will leave the current frame buffer unbound after this, as it is
-	 * used for a target.
-	 * @param attachPoint the attachment source point for this texture.
+	 * @param attachPoint the attachment source point.
 	 * @param texture the texture to attach this to.
 	 */
-	public void attachFrameTexture2D(AttachPoint attachPoint, OGLTexture texture)
+	public void attachFramebufferTexture2D(AttachPoint attachPoint, OGLTexture texture)
 	{
+		clearError();
 		gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_TEXTURE_2D, texture.getGLId(), 0);
+		getError();
 	}
 	
 	/**
-	 * Attaches a texture to this frame buffer for rendering directly to a texture.
-	 * NOTE: This will leave the current frame buffer unbound after this, as it is
-	 * used for a target.
-	 * @param attachPoint the attachment source point for this texture.
+	 * Detaches a texture from this frame buffer.
+	 * @param attachPoint the attachment source point.
 	 */
-	public void detachFrameTexture2D(AttachPoint attachPoint)
+	public void detachFramebufferTexture2D(AttachPoint attachPoint)
 	{
+		clearError();
 		gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_TEXTURE_2D, 0, 0);
+		getError();
 	}
 	
 	/**
-	 * Attaches a texture to this frame buffer for rendering directly to a texture.
-	 * NOTE: This will leave the current frame buffer unbound after this, as it is
-	 * used for a target.
-	 * @param attachPoint the attachment source point for this texture.
-	 * @param renderBuffer the texture to attach this to.
+	 * Attaches a render buffer to the current frame buffer.
+	 * @param attachPoint the attachment source point.
+	 * @param renderBuffer the render buffer to attach this to.
 	 */
-	public void attachFrameRenderBuffer(AttachPoint attachPoint, OGLRenderBuffer renderBuffer)
+	public void attachRenderBuffer(AttachPoint attachPoint, OGLRenderBuffer renderBuffer)
 	{
+		clearError();
 		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_RENDERBUFFER, renderBuffer.getGLId());
+		getError();
 	}
 	
 	/**
-	 * Attaches a texture to this frame buffer for rendering directly to a texture.
-	 * NOTE: This will leave the current frame buffer unbound after this, as it is
-	 * used for a target.
-	 * @param attachPoint the attachment source point for this texture.
+	 * Detaches a render buffer from the current frame buffer.
+	 * @param attachPoint the attachment source point.
 	 */
 	public void detachFrameRenderBuffer(AttachPoint attachPoint)
 	{
+		clearError();
 		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_RENDERBUFFER, 0);
+		getError();
 	}
 	
 	/**
@@ -2555,11 +2770,14 @@ public class OGLGraphics
 	/**
 	 * Binds a buffer to the current context.
 	 * @param type the buffer type to bind.
-	 * @param buffer the buffer to bind.
+	 * @param buffer the buffer to bind. Null unbinds the currently bound buffer type.
 	 */
 	public void setBuffer(BufferType type, OGLBuffer buffer)
 	{
-		gl.glBindBuffer(type.glValue, buffer.getGLId());
+		if (buffer == null)
+			unsetBuffer(type);
+		else
+			gl.glBindBuffer(type.glValue, buffer.getGLId());
 	}
 
 	/**
@@ -2571,6 +2789,7 @@ public class OGLGraphics
 	 */
 	public void setBufferCapacity(BufferType type, CachingHint cachingHint, DataType dataType, int elements)
 	{
+		clearError();
 		gl.glBufferData(type.glValue, elements * dataType.size, null, cachingHint.glValue);
 		getError();
 	}
@@ -2583,6 +2802,7 @@ public class OGLGraphics
 	 */
 	public void setBufferData(BufferType type, CachingHint cachingHint, Buffer data)
 	{
+		clearError();
 		gl.glBufferData(type.glValue, data.capacity(), data, cachingHint.glValue);
 		getError();
 	}
@@ -2596,6 +2816,7 @@ public class OGLGraphics
 	 */
 	public void setBufferSubData(BufferType type, Buffer data, int size, int offset)
 	{
+		clearError();
 		gl.glBufferSubData(type.glValue, offset, size, data);
 		getError();
 	}

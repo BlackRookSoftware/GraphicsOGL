@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object.shader;
+package com.blackrook.ogl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,16 +13,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.media.opengl.*;
-
 import com.blackrook.commons.Common;
-import com.blackrook.ogl.OGLGraphics;
+import com.blackrook.ogl.enums.ShaderProgramType;
 
 /**
  * Geometry shader program.
  * @author Matthew Tropiano
  */
-public class OGLShaderGeometryProgram extends OGLShaderPipelineProgram
+public class OGLShaderProgramGeometry extends OGLShaderProgram
 {
 	/**
 	 * Creates a new geometry shader program.
@@ -32,9 +30,9 @@ public class OGLShaderGeometryProgram extends OGLShaderPipelineProgram
 	 * @throws IOException if the source of the source code can't be read.
 	 * @throws FileNotFoundException if the source file does not exist.
 	 */
-	public OGLShaderGeometryProgram(OGLGraphics g, File file) throws IOException
+	OGLShaderProgramGeometry(OGLGraphics g, File file) throws IOException
 	{
-		super(g);
+		super(g, ShaderProgramType.GEOMETRY);
 		FileInputStream fi = new FileInputStream(file);
 		String sourceCode = Common.getTextualContents(fi, "UTF-8");
 		construct(g, file.getPath(), sourceCode);
@@ -49,9 +47,9 @@ public class OGLShaderGeometryProgram extends OGLShaderPipelineProgram
 	 * @throws NullPointerException if streamName or in is null.
 	 * @throws IOException if the source of the source code can't be read.
 	 */
-	public OGLShaderGeometryProgram(OGLGraphics g, String streamName, InputStream in) throws IOException
+	OGLShaderProgramGeometry(OGLGraphics g, String streamName, InputStream in) throws IOException
 	{
-		super(g);
+		super(g, ShaderProgramType.GEOMETRY);
 		String sourceCode = Common.getTextualContents(in, "UTF-8");
 		construct(g, streamName, sourceCode);
 	}
@@ -63,17 +61,16 @@ public class OGLShaderGeometryProgram extends OGLShaderPipelineProgram
 	 * @param sourceCode the code to compile.
 	 * @throws NullPointerException if streamName or in is null.
 	 */
-	public OGLShaderGeometryProgram(OGLGraphics g, String streamName, String sourceCode)
+	OGLShaderProgramGeometry(OGLGraphics g, String streamName, String sourceCode)
 	{
-		super(g);
+		super(g, ShaderProgramType.GEOMETRY);
 		construct(g, streamName, sourceCode);
 	}
 
 	@Override
 	protected int allocate(OGLGraphics g)
 	{
-		glType = GL2.GL_GEOMETRY_PROGRAM_NV;
-		return g.getGL().glCreateShader(glType);
+		return g.getGL().glCreateShader(ShaderProgramType.GEOMETRY.glShaderType);
 	}
 	
 }

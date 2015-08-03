@@ -61,7 +61,7 @@ public class OGLTexture extends OGLObject
 	/**
 	 * Destroys undeleted texture objects abandoned from destroyed Java objects.
 	 */
-	public static void destroyUndeleted(OGLGraphics g)
+	static void destroyUndeleted(OGLGraphics g)
 	{
 		if (UNDELETED_LENGTH > 0)
 		{

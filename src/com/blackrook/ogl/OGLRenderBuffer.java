@@ -55,7 +55,7 @@ public class OGLRenderBuffer extends OGLObject
 	/**
 	 * Destroys undeleted buffers abandoned from destroyed Java objects.
 	 */
-	public static void destroyUndeleted(OGLGraphics g)
+	static void destroyUndeleted(OGLGraphics g)
 	{
 		if (UNDELETED_LENGTH > 0)
 		{

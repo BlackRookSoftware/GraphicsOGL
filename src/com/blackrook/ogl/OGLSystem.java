@@ -12,8 +12,6 @@ import javax.media.opengl.GLEventListener;
 
 import com.blackrook.commons.list.List;
 import com.blackrook.ogl.input.OGLInputConstants;
-import com.blackrook.ogl.object.shader.OGLShaderPipelineProgram;
-import com.blackrook.ogl.object.shader.OGLShaderProgram;
 
 /**
  * The system that draws stuff.
@@ -73,6 +71,7 @@ public final class OGLSystem
 	    	OGLCanvasNode node = canvasNodeList.getByIndex(i);
 	    	if (node != null && node.isEnabled())
 	    	{
+	    		glGraphics.clearError();
 	    		node.display(glGraphics);
 	    		glGraphics.getError();
 	    		rendertime += node.getRenderTimeNanos();
@@ -86,15 +85,7 @@ public final class OGLSystem
 	    renderTimeNanos = rendertime;
 	    polygonCount = polys;
 	    
-	    // Clean up abandoned objects.
-	    OGLBuffer.destroyUndeleted(glGraphics);
-	    OGLDisplayList.destroyUndeleted(glGraphics);
-	    OGLFrameBuffer.destroyUndeleted(glGraphics);
-	    OGLRenderBuffer.destroyUndeleted(glGraphics);
-	    OGLOcclusionQuery.destroyUndeleted(glGraphics);
-	    OGLShaderProgram.destroyUndeleted(glGraphics);
-	    OGLShaderPipelineProgram.destroyUndeleted(glGraphics);
-	    OGLTexture.destroyUndeleted(glGraphics);
+	    glGraphics.endFrame();
 	}
 
 	/**

@@ -64,7 +64,7 @@ public class OGLDisplayList extends OGLObject implements OGLDrawable
 	/**
 	 * Destroys undeleted lists abandoned from destroyed Java objects.
 	 */
-	public static void destroyUndeleted(OGLGraphics g)
+	static void destroyUndeleted(OGLGraphics g)
 	{
 		if (UNDELETED_LENGTH > 0)
 		{

@@ -29,7 +29,6 @@ public enum BlendArg
 	SOURCE_ALPHA_SATURATE(GL.GL_SRC_ALPHA_SATURATE);
 	
 	public final int glValue;
-	BlendArg(int gltype) 
-		{glValue = gltype;}
+	BlendArg(int gltype) {glValue = gltype;}
 
 }

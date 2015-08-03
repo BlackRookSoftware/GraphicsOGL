@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 
 /**
  * Hint enum types for GL Hints.
@@ -15,13 +15,21 @@ import javax.media.opengl.GL;
  */
 public enum HintType
 {
-	/** Don't care about the quality. */
-	DONT_CARE(GL.GL_DONT_CARE),
-	/** Use the best performing method. */
-	FASTEST(GL.GL_FASTEST),
-	/** Use the best quality method. */
-	NICEST(GL.GL_NICEST);
-
+	/** Point smoothing hints. */
+	POINT_SMOOTHING(GL2.GL_POINT_SMOOTH_HINT),
+	/** Line smoothing hints. */
+	LINE_SMOOTHING(GL2.GL_LINE_SMOOTH_HINT),
+	/** Polygon smoothing hints. */
+	POLYGON_SMOOTHING(GL2.GL_POLYGON_SMOOTH_HINT),
+	/** Fog rendering hints. */
+	FOG(GL2.GL_FOG_HINT),
+	/** Mipmap generation hints. */
+	MIPMAPPING(GL2.GL_GENERATE_MIPMAP_HINT),
+	/** Texture compression hint. */
+	TEXTURE_COMPRESSION(GL2.GL_TEXTURE_COMPRESSION_HINT),
+	/** Perspective compression hint. */
+	PERSPECTIVE_CORRECTION(GL2.GL_PERSPECTIVE_CORRECTION_HINT);
+	
 	public final int glValue;
 	HintType(int gltype) 
 		{glValue = gltype;}

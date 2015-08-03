@@ -5,36 +5,30 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package com.blackrook.ogl.object.shader;
+package com.blackrook.ogl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.media.opengl.*;
+import java.io.*;
 
 import com.blackrook.commons.Common;
-import com.blackrook.ogl.OGLGraphics;
+import com.blackrook.ogl.enums.ShaderProgramType;
 
 /**
- * Fragment shader program.
+ * Vertex shader program.
  * @author Matthew Tropiano
  */
-public class OGLShaderFragmentProgram extends OGLShaderPipelineProgram
+public class OGLShaderProgramVertex extends OGLShaderProgram
 {
 	/**
-	 * Creates a new fragment shader program.
+	 * Creates a new vertex shader program.
 	 * @param g the OGLGraphics instance to use.
 	 * @param file the input file.
 	 * @throws NullPointerException if file is null.
 	 * @throws IOException if the source of the source code can't be read.
 	 * @throws FileNotFoundException if the source file does not exist.
 	 */
-	public OGLShaderFragmentProgram(OGLGraphics g, File file) throws IOException
+	OGLShaderProgramVertex(OGLGraphics g, File file) throws IOException
 	{
-		super(g);
+		super(g, ShaderProgramType.VERTEX);
 		FileInputStream fi = new FileInputStream(file);
 		String sourceCode = Common.getTextualContents(fi, "UTF-8");
 		construct(g, file.getPath(), sourceCode);
@@ -42,38 +36,37 @@ public class OGLShaderFragmentProgram extends OGLShaderPipelineProgram
 	}
 
 	/**
-	 * Creates a new fragment shader program.
+	 * Creates a new vertex shader program.
 	 * @param g the OGLGraphics instance to use.
 	 * @param streamName the name of this stream.
 	 * @param in the input stream.
 	 * @throws NullPointerException if streamName or in is null.
 	 * @throws IOException if the source of the source code can't be read.
 	 */
-	public OGLShaderFragmentProgram(OGLGraphics g, String streamName, InputStream in) throws IOException
+	OGLShaderProgramVertex(OGLGraphics g, String streamName, InputStream in) throws IOException
 	{
-		super(g);
+		super(g, ShaderProgramType.VERTEX);
 		String sourceCode = Common.getTextualContents(in, "UTF-8");
 		construct(g, streamName, sourceCode);
 	}
 
 	/**
-	 * Creates a new fragment shader program.
+	 * Creates a new vertex shader program.
 	 * @param g the OGLGraphics instance to use.
 	 * @param streamName the name of the originating stream.
 	 * @param sourceCode the code to compile.
 	 * @throws NullPointerException if streamName or in is null.
 	 */
-	public OGLShaderFragmentProgram(OGLGraphics g, String streamName, String sourceCode)
+	OGLShaderProgramVertex(OGLGraphics g, String streamName, String sourceCode)
 	{
-		super(g);
+		super(g, ShaderProgramType.VERTEX);
 		construct(g, streamName, sourceCode);
 	}
 
 	@Override
 	protected int allocate(OGLGraphics g)
 	{
-		glType = GL2.GL_FRAGMENT_SHADER;
-		return g.getGL().glCreateShader(glType);
+		return g.getGL().glCreateShader(ShaderProgramType.VERTEX.glShaderType);
 	}
 	
 }

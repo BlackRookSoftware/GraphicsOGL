@@ -9,8 +9,6 @@ package com.blackrook.ogl.mesh;
 
 import java.nio.FloatBuffer;
 
-import javax.media.opengl.*;
-
 import com.blackrook.commons.list.List;
 import com.blackrook.commons.math.geometry.Point2F;
 import com.blackrook.commons.math.geometry.Point3F;
@@ -25,6 +23,7 @@ import com.blackrook.ogl.enums.BufferType;
 import com.blackrook.ogl.enums.CachingHint;
 import com.blackrook.ogl.enums.DataType;
 import com.blackrook.ogl.enums.GeometryType;
+import com.blackrook.ogl.exception.GraphicsException;
 
 /**
  * A drawable polygon type that holds a sequence of points, texture coordinates, 
@@ -339,45 +338,9 @@ public class PolygonMesh implements OGLMesh
 			if (g.supportsVertexBuffers())
 				drawUsingVBO(g);
 			else
-				drawUsingImmediateMode(g);
+				throw new GraphicsException("Drawing a polygon mesh as-is requires VBO extensions.");
 		}
-
-		/**
-		 * Draws this object in immediate mode.
-		 * @param g the graphics context to use.
-		 */
-		public void drawUsingImmediateMode(OGLGraphics g)
-		{
-			Point3F normal = null;
-			Point3F vertex = null;
-			OGLColor color = null;
-			GL2 gl = g.getGL();
-			gl.glBegin(geometryType.glValue);
-			for (int n = 0; n < vertices.length; n++)
-			{
-				if (normals != null)
-					normal = normals[n];
-				if (vertices != null)
-					vertex = vertices[n];
-				if (colors != null)
-					color = colors[n];
-				if (textureCoordinates != null) for (int m = 0; m < textureLayers; m++)
-				{
-					if (m > 0)
-						gl.glMultiTexCoord2d(m-1, textureCoordinates[m][n].x, textureCoordinates[m][n].y);
-					else
-						gl.glTexCoord2d(textureCoordinates[m][n].x, textureCoordinates[m][n].y);
-				}
-				if (colors != null)
-					g.setColor(color);
-				if (normals != null)
-					gl.glNormal3d(normal.x, normal.y, normal.z);
-				if (vertices != null)
-					gl.glVertex3d(vertex.x, vertex.y, vertex.z);
-			}
-			gl.glEnd();
-		}
-
+		
 		/**
 		 * Draws this object using VBOs.
 		 * @param g the graphics context to use.
@@ -421,6 +384,7 @@ public class PolygonMesh implements OGLMesh
 			if (geometryBuffer == null)
 				geometryBuffer = g.createBuffer();
 			
+			g.setBuffer(BufferType.GEOMETRY, geometryBuffer);
 			g.setBufferCapacity(BufferType.GEOMETRY, CachingHint.STATIC_DRAW, DataType.FLOAT, geometryBufferCapacity);
 		
 			int offs = 0;
@@ -451,6 +415,8 @@ public class PolygonMesh implements OGLMesh
 			}
 			
 			g.unmapBuffer(BufferType.GEOMETRY);
+			
+			g.unsetBuffer(BufferType.GEOMETRY);
 		}
 		
 	}

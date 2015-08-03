@@ -80,7 +80,7 @@ public class OGLOcclusionQuery extends OGLObject
 	/**
 	 * Destroys undeleted query objects abandoned from destroyed Java objects.
 	 */
-	public static void destroyUndeleted(OGLGraphics g)
+	static void destroyUndeleted(OGLGraphics g)
 	{
 		if (UNDELETED_LENGTH > 0)
 		{
