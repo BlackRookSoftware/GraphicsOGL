@@ -385,7 +385,7 @@ public class PolygonMesh implements OGLMesh
 				geometryBuffer = g.createBuffer();
 			
 			g.setBuffer(BufferType.GEOMETRY, geometryBuffer);
-			g.setBufferCapacity(BufferType.GEOMETRY, CachingHint.STATIC_DRAW, DataType.FLOAT, geometryBufferCapacity);
+			g.setBufferCapacity(BufferType.GEOMETRY, DataType.FLOAT, CachingHint.STATIC_DRAW, geometryBufferCapacity);
 		
 			int offs = 0;
 			

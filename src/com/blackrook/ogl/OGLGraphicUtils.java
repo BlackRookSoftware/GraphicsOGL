@@ -41,7 +41,7 @@ public final class OGLGraphicUtils
 	/**
 	 * Gets the byte data for a texture in BGRA color information per pixel.
 	 * @param image the input image.
-	 * @return a new {@link ByteBuffer} of the image's byte data.
+	 * @return a new direct {@link ByteBuffer} of the image's byte data.
 	 */
 	public static Buffer getByteData(BufferedImage image)
 	{
@@ -78,8 +78,8 @@ public final class OGLGraphicUtils
 	{
 		int size = getRawSize(image);
 		Buffer data = getByteData(image);
-    	g.setBufferCapacity(BufferType.PIXEL, CachingHint.STREAM_DRAW, DataType.UNSIGNED_BYTE, size);
-    	g.setBufferSubData(BufferType.PIXEL, data, size, 0);
+    	g.setBufferCapacity(BufferType.PIXEL, DataType.UNSIGNED_BYTE, CachingHint.STREAM_DRAW, size);
+    	g.setBufferSubData(BufferType.PIXEL, DataType.UNSIGNED_BYTE, data, size, 0);
 	}
 
 	/**

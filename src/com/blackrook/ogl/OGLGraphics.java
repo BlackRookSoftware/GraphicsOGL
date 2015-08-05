@@ -2881,7 +2881,7 @@ public class OGLGraphics
 	 * @param dataType the data type.
 	 * @param elements the amount of elements of the data type.
 	 */
-	public void setBufferCapacity(BufferType type, CachingHint cachingHint, DataType dataType, int elements)
+	public void setBufferCapacity(BufferType type, DataType dataType, CachingHint cachingHint, int elements)
 	{
 		clearError();
 		gl.glBufferData(type.glValue, elements * dataType.size, null, cachingHint.glValue);
@@ -2894,10 +2894,13 @@ public class OGLGraphics
 	 * @param cachingHint the caching hint on this buffer's data.
 	 * @param data the data to send.
 	 */
-	public void setBufferData(BufferType type, CachingHint cachingHint, Buffer data)
+	public void setBufferData(BufferType type, DataType dataType, CachingHint cachingHint, Buffer data)
 	{
+		if (!data.isDirect())
+			throw new GraphicsException("Data must be a direct buffer."); 
+
 		clearError();
-		gl.glBufferData(type.glValue, data.capacity(), data, cachingHint.glValue);
+		gl.glBufferData(type.glValue, dataType.size * data.capacity(), data, cachingHint.glValue);
 		getError();
 	}
 	
@@ -2908,10 +2911,13 @@ public class OGLGraphics
 	 * @param size the amount of data to send.
 	 * @param offset the offset into the buffer to copy.
 	 */
-	public void setBufferSubData(BufferType type, Buffer data, int size, int offset)
+	public void setBufferSubData(BufferType type, DataType dataType, Buffer data, int size, int offset)
 	{
+		if (!data.isDirect())
+			throw new GraphicsException("Data must be a direct buffer."); 
+		
 		clearError();
-		gl.glBufferSubData(type.glValue, offset, size, data);
+		gl.glBufferSubData(type.glValue, dataType.size * offset, dataType.size * size, data);
 		getError();
 	}
 	
