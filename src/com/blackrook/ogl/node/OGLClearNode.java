@@ -74,7 +74,7 @@ public class OGLClearNode extends OGLCanvasNodeAdapter
 			g.setClearColor(clearRed, clearGreen, clearBlue, clearAlpha);
 		if (clearDepthBuffer)
 			g.setDepthClear(depthValue);
-		g.clearBuffers(clearColorBuffer, clearDepthBuffer, 
+		g.clearFrameBuffers(clearColorBuffer, clearDepthBuffer, 
 				clearAccumulationBuffer, clearStencilBuffer);
 		renderTimeNanos = System.nanoTime() - nanos;
 	}

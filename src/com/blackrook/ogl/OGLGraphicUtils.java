@@ -78,7 +78,7 @@ public final class OGLGraphicUtils
 	{
 		int size = getRawSize(image);
 		Buffer data = getByteData(image);
-    	g.setBufferCapacity(BufferType.PIXEL, CachingHint.STREAM_DRAW, DataType.BYTE, size);
+    	g.setBufferCapacity(BufferType.PIXEL, CachingHint.STREAM_DRAW, DataType.UNSIGNED_BYTE, size);
     	g.setBufferSubData(BufferType.PIXEL, data, size, 0);
 	}
 

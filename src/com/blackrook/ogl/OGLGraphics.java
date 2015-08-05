@@ -1621,14 +1621,14 @@ public class OGLGraphics
 	 * @param accum		clear the accumulation buffer?
 	 * @param stencil	clear the stencil buffer?
 	 */
-	public void clearBuffers(boolean color, boolean depth, boolean accum, boolean stencil)
+	public void clearFrameBuffers(boolean color, boolean depth, boolean accum, boolean stencil)
 	{
 		gl.glClear(
-				(color? GL2.GL_COLOR_BUFFER_BIT : 0) | 
-				(accum? GL2.GL_ACCUM_BUFFER_BIT : 0) | 
-				(depth? GL2.GL_DEPTH_BUFFER_BIT : 0) | 
-				(stencil? GL2.GL_STENCIL_BUFFER_BIT : 0)
-				);
+			(color? GL2.GL_COLOR_BUFFER_BIT : 0) | 
+			(accum? GL2.GL_ACCUM_BUFFER_BIT : 0) | 
+			(depth? GL2.GL_DEPTH_BUFFER_BIT : 0) | 
+			(stencil? GL2.GL_STENCIL_BUFFER_BIT : 0)
+		);
 	}
 
 	/**
@@ -1637,7 +1637,7 @@ public class OGLGraphics
 	 * @param b	the buffer to read from now on.
 	 * @throws IllegalArgumentException if b is NONE or FRONT_AND_BACK.
 	 */
-	public void setBufferRead(FrameBufferType b)
+	public void setFrameBufferRead(FrameBufferType b)
 	{
 		if (b == FrameBufferType.FRONT_AND_BACK || b == FrameBufferType.NONE)
 			throw new IllegalArgumentException("The read buffer can't be NONE nor FRONT AND BACK");
@@ -1650,7 +1650,7 @@ public class OGLGraphics
 	 * @param b	the buffer to write to from now on.
 	 * @throws IllegalArgumentException if b is NONE or FRONT_AND_BACK.
 	 */
-	public void setBufferWrite(FrameBufferType b)
+	public void setFrameBufferWrite(FrameBufferType b)
 	{
 		if (b == FrameBufferType.FRONT_AND_BACK || b == FrameBufferType.NONE)
 			throw new IllegalArgumentException("The read buffer can't be NONE nor FRONT AND BACK");
@@ -1722,8 +1722,7 @@ public class OGLGraphics
 	 * @param stencilDepthFail  function to perform if the stencil test passes, but the depth test fails (if enabled).
 	 * @param stencilDepthPass  function to perform if the fragment passes, both the depth and stencil test.
 	 */
-	public void setStencilTestDepthFail(
-			StencilTestFunc stencilFail, StencilTestFunc stencilDepthFail, StencilTestFunc stencilDepthPass)
+	public void setStencilTestDepthFail(StencilTestFunc stencilFail, StencilTestFunc stencilDepthFail, StencilTestFunc stencilDepthPass)
 	{
 		gl.glStencilOp(stencilFail.glValue, stencilDepthFail.glValue, stencilDepthPass.glValue);
 	}
@@ -3075,6 +3074,7 @@ public class OGLGraphics
 	public void setBufferPointerVertex(DataType dataType, int width, int stride, int offset)
 	{
 		gl.glVertexPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
+		getError();
 	}
 
 	/**
@@ -3090,6 +3090,7 @@ public class OGLGraphics
 	public void setBufferPointerTextureCoordinate(DataType dataType, int width, int stride, int offset)
 	{
 		gl.glTexCoordPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
+		getError();
 	}
 
 	/**
@@ -3104,6 +3105,7 @@ public class OGLGraphics
 	public void setBufferPointerNormal(DataType dataType, int stride, int offset)
 	{
 		gl.glNormalPointer(dataType.glValue, stride * dataType.size, offset * dataType.size);
+		getError();
 	}
 
 	/**
@@ -3119,12 +3121,13 @@ public class OGLGraphics
 	public void setBufferPointerColor(DataType dataType, int width, int stride, int offset)
 	{
 		gl.glColorPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
+		getError();
 	}
 
 	/**
 	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data.
 	 * @param geometryType the geometry type - tells how to interpret the data.
-	 * @param offset the starting offset in the bound buffers.
+	 * @param offset the starting offset in the bound buffers (in elements).
 	 * @param elementCount the number of elements to draw using bound buffers.
 	 * NOTE: an element is in terms of array elements, so if the bound buffers describe the coordinates of 4 vertices,
 	 * <code>elementCount</code> should be 4.
@@ -3141,14 +3144,16 @@ public class OGLGraphics
 	public void drawBufferGeometry(GeometryType geometryType, int offset, int elementCount)
 	{
 		gl.glDrawArrays(geometryType.glValue, offset, elementCount);
+		getError();
 	}
 
 	/**
 	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data, plus
 	 * an element buffer to describe the ordering.
 	 * @param geometryType the geometry type - tells how to interpret the data.
-	 * @param dataType the data type of the indices in the bound buffer.
+	 * @param dataType the data type of the indices in the {@link BufferType#INDICES}-bound buffer (must be an unsigned type).
 	 * @param count the amount of element indices to interpret in the {@link BufferType#INDICES}-bound buffer.
+	 * @param offset the starting offset in the index buffer (in elements).
 	 * @see #setBuffer(BufferType, OGLBuffer)
 	 * @see #setVertexArrayEnabled(boolean)
 	 * @see #setTextureCoordArrayEnabled(boolean)
@@ -3159,18 +3164,19 @@ public class OGLGraphics
 	 * @see #setBufferPointerNormal(DataType, int, int)
 	 * @see #setBufferPointerColor(DataType, int, int, int)
 	 */
-	public void drawBufferGeometryElements(GeometryType geometryType, DataType dataType, int count)
+	public void drawBufferGeometryElements(GeometryType geometryType, DataType dataType, int count, int offset)
 	{
-		gl.glDrawElements(geometryType.glValue, count, dataType.glValue, 0L);
+		gl.glDrawElements(geometryType.glValue, count, dataType.glValue, dataType.size * offset);
+		getError();
 	}	
 	
 	/**
 	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data, plus
 	 * an element buffer to describe the ordering.
 	 * @param geometryType the geometry type - tells how to interpret the data.
-	 * @param dataType the data type of the indices in the {@link BufferType#INDICES}-bound buffer.
-	 * @param start the starting index into the {@link BufferType#INDICES}-bound buffer.
-	 * @param end the ending index in the range.
+	 * @param dataType the data type of the indices in the {@link BufferType#INDICES}-bound buffer (must be an unsigned type).
+	 * @param startIndex the starting index into the {@link BufferType#INDICES}-bound buffer.
+	 * @param endIndex the ending index in the range.
 	 * @param count the amount of element indices to read.
 	 * @see #setBuffer(BufferType, OGLBuffer)
 	 * @see #setVertexArrayEnabled(boolean)
@@ -3185,6 +3191,7 @@ public class OGLGraphics
 	public void drawBufferGeometryElementRange(GeometryType geometryType, DataType dataType, int startIndex, int endIndex, int count)
 	{
 		gl.glDrawRangeElements(geometryType.glValue, startIndex, endIndex, count, dataType.glValue, 0L);
+		getError();
 	}	
 	
 }
