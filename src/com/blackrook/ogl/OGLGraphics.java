@@ -3063,17 +3063,128 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data.
-	 * @param geo			the geometry type - tells how to interpret the data.
-	 * @param offset		the starting offset in the bound arrays.
-	 * @param numElements	the number of elements to draw using bound arrays.
-	 * 						NOTE: an element is in terms of array elements, so if
-	 * 						the bound arrays describe the coordinates of 4 vertices,
-	 * 						numElements should be 4.
+	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
+	 * This sets the vertex pointers.
+	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
+	 * @param width the width of a full set of coordinates (3-dimensional vertices = 3).
+	 * @param stride the distance (in elements) between each vertex. 0 is one after the other.     
+	 * @param offset the offset in each stride where each vertex starts.  
+	 * @see #setBuffer(BufferType, OGLBuffer)
+	 * @see #setVertexArrayEnabled(boolean)   
 	 */
-	public void drawUsingBoundArrays(GeometryType geo, int offset, int numElements)
+	public void setBufferPointerVertex(DataType dataType, int width, int stride, int offset)
 	{
-		gl.glDrawArrays(geo.glValue, offset, numElements);
+		gl.glVertexPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
 	}
 
+	/**
+	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
+	 * This sets the texture coordinate pointers.
+	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
+	 * @param width the width of a full set of coordinates (2-dimensional coords = 2).
+	 * @param stride the distance (in elements) between each coordinate group. 0 is one after the other.     
+	 * @param offset the offset in each stride where each coordinate starts.     
+	 * @see #setBuffer(BufferType, OGLBuffer)
+	 * @see #setTextureCoordArrayEnabled(boolean)   
+	 */
+	public void setBufferPointerTextureCoordinate(DataType dataType, int width, int stride, int offset)
+	{
+		gl.glTexCoordPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
+	}
+
+	/**
+	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
+	 * This sets the normal vector pointers. Always assumes 3-dimensional vectors.
+	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
+	 * @param stride the distance (in elements) between each normal. 0 is one after the other.     
+	 * @param offset the offset in each stride where each normal starts.     
+	 * @see #setBuffer(BufferType, OGLBuffer)
+	 * @see #setNormalArrayEnabled(boolean)   
+	 */
+	public void setBufferPointerNormal(DataType dataType, int stride, int offset)
+	{
+		gl.glNormalPointer(dataType.glValue, stride * dataType.size, offset * dataType.size);
+	}
+
+	/**
+	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
+	 * This sets the color pointers.
+	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
+	 * @param width the width of a full set of color components (4-component color = 4).
+	 * @param stride the distance (in elements) between each color. 0 is one after the other.     
+	 * @param offset the offset in each stride where each color starts.     
+	 * @see #setBuffer(BufferType, OGLBuffer)
+	 * @see #setColorArrayEnabled(boolean)   
+	 */
+	public void setBufferPointerColor(DataType dataType, int width, int stride, int offset)
+	{
+		gl.glColorPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
+	}
+
+	/**
+	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data.
+	 * @param geometryType the geometry type - tells how to interpret the data.
+	 * @param offset the starting offset in the bound buffers.
+	 * @param elementCount the number of elements to draw using bound buffers.
+	 * NOTE: an element is in terms of array elements, so if the bound buffers describe the coordinates of 4 vertices,
+	 * <code>elementCount</code> should be 4.
+	 * @see #setBuffer(BufferType, OGLBuffer)
+	 * @see #setVertexArrayEnabled(boolean)
+	 * @see #setTextureCoordArrayEnabled(boolean)
+	 * @see #setNormalArrayEnabled(boolean)
+	 * @see #setColorArrayEnabled(boolean)
+	 * @see #setBufferPointerVertex(DataType, int, int, int)
+	 * @see #setBufferPointerTextureCoordinate(DataType, int, int, int)
+	 * @see #setBufferPointerNormal(DataType, int, int)
+	 * @see #setBufferPointerColor(DataType, int, int, int)
+	 */
+	public void drawBufferGeometry(GeometryType geometryType, int offset, int elementCount)
+	{
+		gl.glDrawArrays(geometryType.glValue, offset, elementCount);
+	}
+
+	/**
+	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data, plus
+	 * an element buffer to describe the ordering.
+	 * @param geometryType the geometry type - tells how to interpret the data.
+	 * @param dataType the data type of the indices in the bound buffer.
+	 * @param count the amount of element indices to interpret in the {@link BufferType#INDICES}-bound buffer.
+	 * @see #setBuffer(BufferType, OGLBuffer)
+	 * @see #setVertexArrayEnabled(boolean)
+	 * @see #setTextureCoordArrayEnabled(boolean)
+	 * @see #setNormalArrayEnabled(boolean)
+	 * @see #setColorArrayEnabled(boolean)
+	 * @see #setBufferPointerVertex(DataType, int, int, int)
+	 * @see #setBufferPointerTextureCoordinate(DataType, int, int, int)
+	 * @see #setBufferPointerNormal(DataType, int, int)
+	 * @see #setBufferPointerColor(DataType, int, int, int)
+	 */
+	public void drawBufferGeometryElements(GeometryType geometryType, DataType dataType, int count)
+	{
+		gl.glDrawElements(geometryType.glValue, count, dataType.glValue, 0L);
+	}	
+	
+	/**
+	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data, plus
+	 * an element buffer to describe the ordering.
+	 * @param geometryType the geometry type - tells how to interpret the data.
+	 * @param dataType the data type of the indices in the {@link BufferType#INDICES}-bound buffer.
+	 * @param start the starting index into the {@link BufferType#INDICES}-bound buffer.
+	 * @param end the ending index in the range.
+	 * @param count the amount of element indices to read.
+	 * @see #setBuffer(BufferType, OGLBuffer)
+	 * @see #setVertexArrayEnabled(boolean)
+	 * @see #setTextureCoordArrayEnabled(boolean)
+	 * @see #setNormalArrayEnabled(boolean)
+	 * @see #setColorArrayEnabled(boolean)
+	 * @see #setBufferPointerVertex(DataType, int, int, int)
+	 * @see #setBufferPointerTextureCoordinate(DataType, int, int, int)
+	 * @see #setBufferPointerNormal(DataType, int, int)
+	 * @see #setBufferPointerColor(DataType, int, int, int)
+	 */
+	public void drawBufferGeometryElementRange(GeometryType geometryType, DataType dataType, int startIndex, int endIndex, int count)
+	{
+		gl.glDrawRangeElements(geometryType.glValue, startIndex, endIndex, count, dataType.glValue, 0L);
+	}	
+	
 }

@@ -83,7 +83,7 @@ public final class OGLGeometryUtils
 		for (GeometryInfo info : directives)
 			info.setState(g, dataType);
 		
-		g.getGL().glDrawArrays(geometryType.glValue, 0, count);
+		g.drawBufferGeometry(geometryType, 0, count);
 	
 		for (GeometryInfo info : directives)
 			info.unsetState(g);
@@ -112,7 +112,7 @@ public final class OGLGeometryUtils
 		/** Data stride. */
 		protected int stride;
 		/** Data offset in a buffer. */
-		protected long offset;
+		protected int offset;
 		
 		private GeometryInfo(Component component, int width, int stride, int offset)
 		{
@@ -149,7 +149,7 @@ public final class OGLGeometryUtils
 		protected void setState(OGLGraphics g, DataType type)
 		{
 			g.setVertexArrayEnabled(true);
-			g.getGL().glVertexPointer(width, type.glValue, stride * type.size, offset * type.size);
+			g.setBufferPointerVertex(type, width, stride, offset);
 		}
 
 		@Override
@@ -177,7 +177,7 @@ public final class OGLGeometryUtils
 		{
 			g.setTextureUnit(multiTexUnit);
 			g.setTextureCoordArrayEnabled(true);
-			g.getGL().glTexCoordPointer(width, type.glValue, stride * type.size, offset * type.size);
+			g.setBufferPointerTextureCoordinate(type, width, stride, offset);
 		}
 
 		@Override
@@ -201,7 +201,7 @@ public final class OGLGeometryUtils
 		protected void setState(OGLGraphics g, DataType type)
 		{
 			g.setNormalArrayEnabled(true);
-			g.getGL().glNormalPointer(type.glValue, stride * type.size, offset * type.size);
+			g.setBufferPointerNormal(type, stride, offset);
 		}
 
 		@Override
@@ -224,7 +224,7 @@ public final class OGLGeometryUtils
 		protected void setState(OGLGraphics g, DataType type)
 		{
 			g.setColorArrayEnabled(true);
-			g.getGL().glColorPointer(width, type.glValue, stride * type.size, offset * type.size);
+			g.setBufferPointerColor(type, width, stride, offset);
 		}
 
 		@Override
