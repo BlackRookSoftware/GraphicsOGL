@@ -925,6 +925,30 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Tells the OpenGL implementation to finish all pending commands in finite time.
+	 * This ensures that the next commands are executed immediately.
+	 * Has little to no effect on a double-buffered setup.
+	 * Not to be confused with {@link #finish()}.
+	 * @see #finish()
+	 */
+	public void flush()
+	{
+		gl.glFlush();
+	}
+	
+	/**
+	 * Tells the OpenGL implementation to finish all pending commands.
+	 * OpenGL commands are usually pipelined for performance reasons. This ensures
+	 * that OpenGL finishes all pending commands so that what you expect in the framebuffer
+	 * is the last command executed, then resumes this thread.
+	 * This best called right before a screenshot is taken.
+	 */
+	public void finish()
+	{
+		gl.glFinish();
+	}
+	
+	/**
 	 * Sets the current matrix for matrix operations.
 	 * Note that other commands may change this mode automatically.
 	 * @param mode the matrix mode to set.
