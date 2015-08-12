@@ -1506,25 +1506,51 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Sets most fog attributes at once.
+	 * Sets most fog attributes at once for linear fog.
 	 * @param color the color of the fog.
-	 * @param formula the formula to use.
-	 * @param density the density factor to use.
 	 * @param start the unit of space for the fog start (before that is no fog).
 	 * @param end the unit of space for the fog end (after that is solid color).
 	 * @see OGLGraphics#setFogColor(OGLColor)
 	 * @see OGLGraphics#setFogFormula(FogFormulaType)
-	 * @see OGLGraphics#setFogDensity(float)
 	 * @see OGLGraphics#setFogStart(float)
 	 * @see OGLGraphics#setFogEnd(float)
 	 */
-	public void setFog(OGLColor color, FogFormulaType formula, float density, float start, float end)
+	public void setFogLinear(OGLColor color, float start, float end)
 	{
+		setFogFormula(FogFormulaType.LINEAR);
 		setFogColor(color);
-		setFogFormula(formula);
-		setFogDensity(density);
 		setFogStart(start);
 		setFogEnd(end);
+	}
+	
+	/**
+	 * Sets most fog attributes at once for exponent fog.
+	 * @param color the color of the fog.
+	 * @param density the density factor to use.
+	 * @see OGLGraphics#setFogColor(OGLColor)
+	 * @see OGLGraphics#setFogFormula(FogFormulaType)
+	 * @see OGLGraphics#setFogDensity(float)
+	 */
+	public void setFogExponent(OGLColor color, float density)
+	{
+		setFogFormula(FogFormulaType.EXPONENT);
+		setFogColor(color);
+		setFogDensity(density);
+	}
+	
+	/**
+	 * Sets most fog attributes at once for exponent squared fog.
+	 * @param color the color of the fog.
+	 * @param density the density factor to use.
+	 * @see OGLGraphics#setFogColor(OGLColor)
+	 * @see OGLGraphics#setFogFormula(FogFormulaType)
+	 * @see OGLGraphics#setFogDensity(float)
+	 */
+	public void setFogExponentSquared(OGLColor color, float density)
+	{
+		setFogFormula(FogFormulaType.EXPONENT_SQUARED);
+		setFogColor(color);
+		setFogDensity(density);
 	}
 	
 	/**
@@ -1550,6 +1576,19 @@ public class OGLGraphics
 		FLOAT_STATE[2] = blue;
 		FLOAT_STATE[3] = alpha;
 		gl.glFogfv(GL2.GL_FOG_COLOR, FLOAT_STATE, 0);
+	}
+
+	/**
+	 * Sets the current color used for fog as an ARGB integer.
+	 * @param argb the 32-bit color as an integer.
+	 */
+	public void setFogColorARGB(int argb)
+	{
+		float a = ((argb & 0xFF000000) >>> 24) / 255f; 
+		float r = ((argb & 0x00FF0000) >>> 16) / 255f; 
+		float g = ((argb & 0x0000FF00) >>> 8) / 255f; 
+		float b = (argb & 0x000000FF) / 255f;
+		setFogColor(r, g, b, a);
 	}
 
 	/**
