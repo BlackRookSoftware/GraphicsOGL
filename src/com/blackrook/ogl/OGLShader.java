@@ -419,6 +419,13 @@ public class OGLShader extends OGLObject
 		{
 			return typeName;
 		}
+		
+		@Override
+		public String toString() 
+		{
+			return "uniform "+typeName+" "+name+" (location "+locationId+")";
+		}
+		
 	}
 
 }

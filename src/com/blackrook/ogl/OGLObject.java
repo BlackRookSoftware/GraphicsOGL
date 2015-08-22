@@ -92,4 +92,9 @@ public abstract class OGLObject
 	 */
 	protected abstract boolean free(OGLGraphics g);
 		
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + " id:"+glId;
+	}
 }
