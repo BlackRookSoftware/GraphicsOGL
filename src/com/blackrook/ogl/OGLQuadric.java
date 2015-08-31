@@ -180,4 +180,58 @@ public class OGLQuadric
 		return quadric != null;
 	}
 	
+	/**
+	 * Draws a cylinder to the graphics context using this quadric.
+	 * @param g the target graphics context.
+	 * @param baseRadius the radius of the bottom of the cylinder in units.
+	 * @param topRadius the radius of the top of the cylinder in units.
+	 * @param height the height of the cylinder in units.
+	 * @param slices the amount of sides on the cylinder. 
+	 * @param stacks the amount of subdivisions along the cylinder's height.
+	 */
+	public void drawCylinder(OGLGraphics g, double baseRadius, double topRadius, double height, int slices, int stacks)
+	{
+		g.getGLU().gluCylinder(quadric, baseRadius, topRadius, height, slices, stacks);
+	}
+	
+	/**
+	 * Draws a sphere to the graphics context using this quadric.
+	 * @param g the target graphics context.
+	 * @param radius the radius of the sphere in units.
+	 * @param slices the amount of sides on the sphere. 
+	 * @param stacks the amount of subdivisions along the sphere's height.
+	 */
+	public void drawSphere(OGLGraphics g, double radius, int slices, int stacks)
+	{
+		g.getGLU().gluSphere(quadric, radius, slices, stacks);
+	}
+	
+	/**
+	 * Draws a flat disk to the graphics context using this quadric.
+	 * @param g the target graphics context.
+	 * @param internalRadius the radius of the inside hole of the disk. 0 = no hole.
+	 * @param externalRadius the radius of the top of the cylinder in units.
+	 * @param slices the amount of sides on the disk. 
+	 * @param stacks the amount of subdivisions along the disk's surface, going around.
+	 */
+	public void drawDisk(OGLGraphics g, double internalRadius, double externalRadius, int slices, int stacks)
+	{
+		g.getGLU().gluDisk(quadric, internalRadius, externalRadius, slices, stacks);
+	}
+	
+	/**
+	 * Draws a partial flat disk to the graphics context using this quadric.
+	 * @param g the target graphics context.
+	 * @param internalRadius the radius of the inside hole of the disk. 0 = no hole.
+	 * @param externalRadius the radius of the top of the cylinder in units.
+	 * @param slices the amount of sides on the disk. 
+	 * @param stacks the amount of subdivisions along the disk's surface, going around.
+	 * @param startAngle the starting angle of the disk.
+	 * @param angle the angle sweep of the disk.
+	 */
+	public void drawPartialDisk(OGLGraphics g, double internalRadius, double externalRadius, int slices, int stacks, double startAngle, double angle)
+	{
+		g.getGLU().gluPartialDisk(quadric, internalRadius, externalRadius, slices, stacks, startAngle, angle);
+	}
+	
 }
