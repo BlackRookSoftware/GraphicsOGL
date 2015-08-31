@@ -2098,15 +2098,6 @@ public class OGLGraphics
 	}
 	
 	/**
-	 * Creates a new OGLQuadric object for generating geometry.
-	 * @return a new quadric object.
-	 */
-	public OGLQuadric createQuadric()
-	{
-		return new OGLQuadric(this);
-	}
-	
-	/**
 	 * Creates a new texture object.
 	 * @return a new, uninitialized texture object.
 	 * @throws GraphicsException if the object could not be created.
