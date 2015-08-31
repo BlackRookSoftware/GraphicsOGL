@@ -74,7 +74,7 @@ public class OGLQuadric
 	 * Creates a new Quadric object.
 	 * @param g the graphics context to use.
 	 */
-	OGLQuadric(OGLGraphics g)
+	public OGLQuadric(OGLGraphics g)
 	{
 		GLU glu = g.getGLU();
 		quadric = glu.gluNewQuadric();
