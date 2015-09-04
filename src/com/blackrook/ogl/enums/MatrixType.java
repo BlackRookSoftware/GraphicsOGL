@@ -15,12 +15,17 @@ import javax.media.opengl.*;
  */
 public enum MatrixType
 {
-	MODELVIEW(GL2.GL_MODELVIEW),
-	PROJECTION(GL2.GL_PROJECTION),
-	TEXTURE(GL2.GL_TEXTURE),
-	COLOR(GL2.GL_COLOR);
+	MODELVIEW(GL2.GL_MODELVIEW, GL2.GL_MODELVIEW_MATRIX),
+	PROJECTION(GL2.GL_PROJECTION, GL2.GL_PROJECTION_MATRIX),
+	TEXTURE(GL2.GL_TEXTURE, GL2.GL_TEXTURE_MATRIX),
+	COLOR(GL2.GL_COLOR, GL2.GL_COLOR_MATRIX);
 	
 	public final int glValue;
-	MatrixType(int gltype) {glValue = gltype;}
+	public final int glReadValue;
+	MatrixType(int glValue, int glReadValue) 
+	{
+		this.glValue = glValue;
+		this.glReadValue = glReadValue;
+	}
 
 }

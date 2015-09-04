@@ -967,11 +967,52 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Reads a current matrix into an array.
+	 * @param matrixType the type of matrix to load.
+	 * @param outArray the output array. Must be length 16 or greater.
+	 * @param offset the target offset into the array. Offset + 16 must not exceed the array length.
+	 */
+	public void matrixGet(MatrixType matrixType, float[] outArray, int offset)
+	{
+		gl.glGetFloatv(matrixType.glReadValue, outArray, offset);
+	}
+	
+	/**
+	 * Reads a current matrix into an array.
+	 * @param matrixType the type of matrix to load.
+	 * @param matrix the output matrix.
+	 */
+	public void matrixGet(MatrixType matrixType, Matrix4F matrix)
+	{
+		gl.glGetFloatv(matrixType.glReadValue, matrix.getArray(), 0);
+	}
+	
+	/**
+	 * Loads a matrix's contents from a column-major array into the current selected matrix.
+	 */
+	public void matrixLoad(float[] matrixArray)
+	{
+		if (matrixArray.length < 16)
+			throw new GraphicsException("The array is less than 16 components.");
+		gl.glLoadMatrixf(matrixArray, 0);
+	}
+
+	/**
 	 * Loads a matrix's contents into the current selected matrix.
 	 */
 	public void matrixLoad(Matrix4F matrix)
 	{
-		gl.glLoadMatrixf(matrix.getArray(), 0);
+		matrixLoad(matrix.getArray());
+	}
+
+	/**
+	 * Multiplies a matrix into the current selected matrix from a column-major array into.
+	 */
+	public void matrixMultiply(float[] matrixArray)
+	{
+		if (matrixArray.length < 16)
+			throw new GraphicsException("The array is less than 16 components.");
+		gl.glMultMatrixf(matrixArray, 0);
 	}
 
 	/**
@@ -979,7 +1020,7 @@ public class OGLGraphics
 	 */
 	public void matrixMultiply(Matrix4F matrix)
 	{
-		gl.glMultMatrixf(matrix.getArray(), 0);
+		matrixMultiply(matrix.getArray());
 	}
 
 	/**
@@ -1084,6 +1125,24 @@ public class OGLGraphics
 		gl.glOrtho(left, right, bottom, top, near, far);
 	}
 
+	/**
+	 * Multiplies a "look at" matrix to the current matrix.
+	 * This sets up the matrix to look at a place in the world (if modelview).
+	 * @param eyeX the point to look at, X-coordinate.
+	 * @param eyeY the point to look at, Y-coordinate.
+	 * @param eyeZ the point to look at, Z-coordinate.
+	 * @param centerX the reference point to look from, X-coordinate.
+	 * @param centerY the reference point to look from, Y-coordinate.
+	 * @param centerZ the reference point to look from, Z-coordinate.
+	 * @param upX the up vector of the viewpoint, X-coordinate.
+	 * @param upY the up vector of the viewpoint, Y-coordinate.
+	 * @param upZ the up vector of the viewpoint, Z-coordinate.
+	 */
+	public void matrixLookAt(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ)
+	{
+		glu.gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+	}
+	
 	/**
 	 * Pushes a series of attributes onto the attribute stack.
 	 * @param attribs the list of attributes to preserve.
