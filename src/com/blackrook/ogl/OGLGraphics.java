@@ -7,7 +7,6 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -2205,59 +2204,53 @@ public class OGLGraphics
 
 	/**
 	 * Sends a texture into OpenGL's memory for the current 1D texture.
-	 * @param image the image to send.
+	 * @param imageData the image to send.
 	 * @param format the internal format.
-	 * @param border the pixel border to add, if any.
+	 * @param width the texture width in texels.
+	 * @param border the texel border to add, if any.
 	 */
-	public void setTextureData1D(BufferedImage image, TextureFormat format, int border)
+	public void setTextureData1D(Buffer imageData, TextureFormat format, int width, int border)
 	{
-		if (image.getWidth() > getMaxTextureSize() || image.getHeight() > getMaxTextureSize())
+		if (width > getMaxTextureSize())
 			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
 		
-		Buffer buffer = null;
-		int imgWidth = image.getWidth();
-		
-		if (!OGLGraphicUtils.hasPowerOfTwoDimensions(image))
-		{
-			imgWidth = RMath.closestPowerOfTwo(image.getWidth());
-			buffer = OGLGraphicUtils.getByteData(OGLGraphicUtils.performResizeBilinear(image, imgWidth, 1)); 
-		}
-		else
-		{
-			buffer = OGLGraphicUtils.getByteData(image);	
-		}
+		if (!imageData.isDirect())
+			throw new GraphicsException("Data must be a direct buffer."); 
 		
 		clearError();
 		gl.glTexImage1D(
 			GL2.GL_TEXTURE_1D,
 			0,
 			format.glid, 
-			imgWidth,
+			width,
 			border,
 			GL2.GL_BGRA,
 			GL2.GL_UNSIGNED_BYTE,
-			buffer
+			imageData
 		);
 		getError();
 	}
 
 	/**
 	 * Sends a subset of data to the currently-bound 1D texture already in OpenGL's memory.
-	 * @param image the image to send.
+	 * @param imageData the image to send.
+	 * @param width the texture width in texels.
 	 * @param xoffs the texel offset.
 	 */
-	public void setTextureSubData1D(BufferedImage image, int xoffs)
+	public void setTextureSubData1D(Buffer imageData, int width, int xoffs)
 	{
-		Buffer buffer = OGLGraphicUtils.getByteData(image);
+		if (!imageData.isDirect())
+			throw new GraphicsException("Data must be a direct buffer."); 
+
 		clearError();
 		gl.glTexSubImage1D(
 			GL2.GL_TEXTURE_1D,
 			0,
 			xoffs,
-			image.getWidth(),
+			width,
 			GL2.GL_RGBA,
 			GL2.GL_UNSIGNED_BYTE,
-			buffer
+			imageData
 		);
 		getError();
 	}
@@ -2311,63 +2304,61 @@ public class OGLGraphics
 	
 	/**
 	 * Sends a texture into OpenGL's memory for the current 2D texture.
-	 * @param image the image to send.
+	 * @param imageData the image to send.
 	 * @param format the internal format.
-	 * @param border the pixel border to add, if any.
+	 * @param width the texture width in texels.
+	 * @param height the texture height in texels.
+	 * @param border the texel border to add, if any.
 	 */
-	public void setTextureData2D(BufferedImage image, TextureFormat format, int border)
+	public void setTextureData2D(Buffer imageData, TextureFormat format, int width, int height, int border)
 	{
-		if (image.getWidth() > getMaxTextureSize() || image.getHeight() > getMaxTextureSize())
+		if (width > getMaxTextureSize() || height > getMaxTextureSize())
 			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
+
+		if (!imageData.isDirect())
+			throw new GraphicsException("Data must be a direct buffer."); 
 		
-		Buffer buffer = null;
-		int imgWidth = image.getWidth();
-		int imgHeight = image.getHeight();
-
-		if (!OGLGraphicUtils.hasPowerOfTwoDimensions(image))
-		{
-			imgWidth = RMath.closestPowerOfTwo(image.getWidth());
-			imgHeight = RMath.closestPowerOfTwo(image.getHeight());
-			buffer = OGLGraphicUtils.getByteData(OGLGraphicUtils.performResizeBilinear(image, imgWidth, imgHeight)); 
-		}
-		else
-		{
-			buffer = OGLGraphicUtils.getByteData(image);	
-		}
-
+		clearError();
 		gl.glTexImage2D(
 			GL2.GL_TEXTURE_2D,
 			0,
 			format.glid, 
-			imgWidth,
-			imgHeight,
+			width,
+			height,
 			border,
 			GL2.GL_BGRA,
 			GL2.GL_UNSIGNED_BYTE,
-			buffer
+			imageData
 		);
+		getError();
 	}
 	
 	/**
 	 * Sends a subset of data to the currently-bound 2D texture already in OpenGL's memory.
-	 * @param image the image to send.
+	 * @param imageData the image to send.
+	 * @param width the texture width in texels.
+	 * @param height the texture height in texels.
 	 * @param xoffs the texel offset.
 	 * @param yoffs the texel offset.
 	 */
-	public void setTextureSubData2D(BufferedImage image, int xoffs, int yoffs)
+	public void setTextureSubData2D(Buffer imageData, int width, int height, int xoffs, int yoffs)
 	{
-		Buffer buffer = OGLGraphicUtils.getByteData(image);
+		if (!imageData.isDirect())
+			throw new GraphicsException("Data must be a direct buffer."); 
+
+		clearError();
 		gl.glTexSubImage2D(
 			GL2.GL_TEXTURE_2D,
 			0,
 			xoffs,
 			yoffs,
-			image.getWidth(),
-			image.getHeight(),
+			width,
+			height,
 			GL2.GL_BGRA,
 			GL2.GL_UNSIGNED_BYTE,
-			buffer
+			imageData
 		);
+		getError();
 	}
 	
 	/**
@@ -2438,64 +2429,62 @@ public class OGLGraphics
 	/**
 	 * Sends a texture into OpenGL's memory for the current CubeMap texture.
 	 * @param face the cube face to set.
-	 * @param image the image to send.
+	 * @param imageData the image to send.
 	 * @param format the internal format.
-	 * @param border the pixel border to add, if any.
+	 * @param width the texture width in texels.
+	 * @param height the texture height in texels.
+	 * @param border the texel border to add, if any.
 	 */
-	public void setTextureDataCube(TextureCubeFace face, BufferedImage image, TextureFormat format, int border)
+	public void setTextureDataCube(TextureCubeFace face, Buffer imageData, TextureFormat format, int width, int height, int border)
 	{
-		if (image.getWidth() > getMaxTextureSize() || image.getHeight() > getMaxTextureSize())
+		if (width > getMaxTextureSize() || height > getMaxTextureSize())
 			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
 		
-		Buffer buffer = null;
-		int imgWidth = image.getWidth();
-		int imgHeight = image.getHeight();
+		if (!imageData.isDirect())
+			throw new GraphicsException("Data must be a direct buffer."); 
 
-		if (!OGLGraphicUtils.hasPowerOfTwoDimensions(image))
-		{
-			imgWidth = RMath.closestPowerOfTwo(image.getWidth());
-			imgHeight = RMath.closestPowerOfTwo(image.getHeight());
-			buffer = OGLGraphicUtils.getByteData(OGLGraphicUtils.performResizeBilinear(image, imgWidth, imgHeight)); 
-		}
-		else
-		{
-			buffer = OGLGraphicUtils.getByteData(image);	
-		}
-
+		clearError();
 		gl.glTexImage2D(
 			face.glValue,
 			0,
 			format.glid, 
-			imgWidth,
-			imgHeight,
+			width,
+			height,
 			border,
 			GL2.GL_BGRA,
 			GL2.GL_UNSIGNED_BYTE,
-			buffer
+			imageData
 		);
+		getError();
 	}
 	
 	/**
 	 * Sends a subset of data to the currently-bound CubeMap texture already in OpenGL's memory.
 	 * @param face the cube face to set.
-	 * @param image the image to send.
+	 * @param imageData the image to send.
+	 * @param width the texture width in texels.
+	 * @param height the texture height in texels.
 	 * @param xoffs the texel offset.
 	 * @param yoffs the texel offset.
 	 */
-	public void setTextureSubDataCube(TextureCubeFace face, BufferedImage image, int xoffs, int yoffs)
+	public void setTextureSubDataCube(TextureCubeFace face, Buffer imageData, int width, int height, int xoffs, int yoffs)
 	{
-		Buffer buffer = OGLGraphicUtils.getByteData(image);
+		if (!imageData.isDirect())
+			throw new GraphicsException("Data must be a direct buffer."); 
+
+		clearError();
 		gl.glTexSubImage2D(
 			face.glValue,
 			0,
 			xoffs,
 			yoffs,
-			image.getWidth(),
-			image.getHeight(),
+			width,
+			height,
 			GL2.GL_BGRA,
 			GL2.GL_UNSIGNED_BYTE,
-			buffer
+			imageData
 		);
+		getError();
 	}
 	
 	/**
