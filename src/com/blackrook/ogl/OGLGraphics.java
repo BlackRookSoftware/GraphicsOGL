@@ -3163,6 +3163,14 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Sets the current client active texture (for coordinates).
+	 */
+	public void setCurrentActiveTextureCoordArray(int unit)
+	{
+		gl.glClientActiveTexture(GL.GL_TEXTURE0 + unit);
+	}
+
+	/**
 	 * Enables or disables the processing of bound vertex color arrays.
 	 */
 	public void setColorArrayEnabled(boolean flag)
