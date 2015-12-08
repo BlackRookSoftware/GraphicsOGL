@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 /**
  * Caching hint for vertex/pixel buffer data.

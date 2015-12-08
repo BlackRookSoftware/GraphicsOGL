@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
 
 /**
  * Enumeration of fog coordinate calculation types.

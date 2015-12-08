@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
 
 /**
  * Hint enum types for GL Hints.

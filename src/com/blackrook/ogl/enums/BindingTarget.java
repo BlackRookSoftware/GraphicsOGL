@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 /**
  * Target to bind buffer objects to.

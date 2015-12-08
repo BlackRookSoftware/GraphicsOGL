@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.GL2;
+import com.jogamp.opengl.GL2;
 
 /**
  * Type enumerant for VBO, Texture Buffer, or other one-dimensional buffer types.

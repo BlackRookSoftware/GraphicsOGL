@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 /**
  * Enum for fill modes.

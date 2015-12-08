@@ -144,7 +144,7 @@ public class NEWTInputAdapter implements MouseListener, KeyListener, OGLInputCon
 	@Override
 	public void mouseWheelMoved(MouseEvent event)
 	{
-		system.sendMouseWheel(event.getWheelRotation());
+		system.sendKeyRelease((int)event.getRotation()[1]);
 	}
 
 	@Override
@@ -159,13 +159,6 @@ public class NEWTInputAdapter implements MouseListener, KeyListener, OGLInputCon
 	{
 		// The input constants are equivalent to KEY_*, so, don't convert.
 		system.sendKeyRelease(event.getKeyCode());
-	}
-
-	@Override
-	public void keyTyped(KeyEvent event)
-	{
-		// The input constants are equivalent to KEY_*, so, don't convert.
-		system.sendKeyTyped(event.getKeyCode());
 	}
 
 }

@@ -7,8 +7,8 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLEventListener;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLEventListener;
 
 import com.blackrook.commons.list.List;
 import com.blackrook.ogl.input.OGLInputConstants;

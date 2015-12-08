@@ -7,8 +7,8 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
-import javax.media.opengl.glu.GLU;
-import javax.media.opengl.glu.GLUquadric;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.GLUquadric;
 
 /**
  * GLU Quadric encapsulation class.

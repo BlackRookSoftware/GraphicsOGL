@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 /**
  * Enumeration of OpenGL FrameBuffer types.

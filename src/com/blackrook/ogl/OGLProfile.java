@@ -7,8 +7,8 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLProfile;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLProfile;
 
 /**
  * Extension of {@link GLCapabilities} that uses the default device for

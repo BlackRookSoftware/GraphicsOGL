@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 import com.blackrook.ogl.enums.ShaderProgramType;
 import com.blackrook.ogl.exception.GraphicsException;

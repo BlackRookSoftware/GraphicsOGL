@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import javax.media.opengl.GL;
+import com.jogamp.opengl.GL;
 
 /**
  * Reusable logical enumerations. 

@@ -19,8 +19,8 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
-import javax.media.opengl.*;
-import javax.media.opengl.glu.GLU;
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.GLU;
 
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.math.Matrix4F;

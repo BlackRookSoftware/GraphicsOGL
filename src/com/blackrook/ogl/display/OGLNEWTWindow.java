@@ -9,9 +9,8 @@ package com.blackrook.ogl.display;
 
 import java.awt.Image;
 
-import javax.media.nativewindow.util.Point;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLEventListener;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLEventListener;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.Ticker;
@@ -19,6 +18,7 @@ import com.blackrook.ogl.OGLDisplay;
 import com.blackrook.ogl.OGLProfile;
 import com.blackrook.ogl.OGLSystem;
 import com.blackrook.ogl.input.NEWTInputAdapter;
+import com.jogamp.nativewindow.util.Point;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;

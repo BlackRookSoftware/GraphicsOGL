@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.blackrook.ogl;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 /**
  * An encapsulation of an occlusion query object for OpenGL.

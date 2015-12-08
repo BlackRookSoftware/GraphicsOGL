@@ -9,7 +9,7 @@ package com.blackrook.ogl;
 
 import java.io.UnsupportedEncodingException;
 
-import javax.media.opengl.*;
+import com.jogamp.opengl.*;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.hash.HashMap;
