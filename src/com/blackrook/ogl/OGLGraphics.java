@@ -1782,6 +1782,65 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Reads from the current-bound frame buffer into a target buffer.
+	 * @param imageData	the buffer to write the RGBA pixel data to (must be direct).
+	 * @param x the starting screen offset, x-coordinate (0 is left).
+	 * @param y the starting screen offset, y-coordinate (0 is bottom).
+	 * @param width the capture width in pixels.
+	 * @param height the capture height in pixels.
+	 * @throws GraphicsException if the buffer provided is not direct.
+	 */
+	public void readFrameBuffer(Buffer imageData, int x, int y, int width, int height)
+	{
+		if (!imageData.isDirect())
+			throw new GraphicsException("Data must be a direct buffer.");
+		
+		gl.glReadPixels(x, y, width, height, GL2.GL_BGRA, GL2.GL_UNSIGNED_BYTE, imageData);
+	}
+
+	/**
+	 * Sets the current pixel packing alignment value (GL-to-application).
+	 * This is used for pulling pixel data from an OpenGL buffer into a format
+	 * that the application can recognize/manipulate.
+	 * @param alignment the alignment in bytes.
+	 */
+	public void setPixelPackAlignment(int alignment)
+	{
+		gl.glPixelStorei(GL.GL_PACK_ALIGNMENT, alignment);
+	}
+
+	/**
+	 * Gets the current pixel packing alignment value (GL-to-application).
+	 * This is used for pulling pixel data from an OpenGL buffer into a format
+	 * that the application can recognize/manipulate.
+	 */
+	public int getPixelPackAlignment()
+	{
+		return getGLInt(GL.GL_PACK_ALIGNMENT);
+	}
+
+	/**
+	 * Sets the current pixel unpacking alignment value (application-to-GL).
+	 * This is used for pulling pixel data from an OpenGL buffer into a format
+	 * that the application can recognize/manipulate.
+	 * @param alignment the alignment in bytes.
+	 */
+	public void setPixelUnpackAlignment(int alignment)
+	{
+		gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, alignment);
+	}
+
+	/**
+	 * Gets the current pixel unpacking alignment value (application-to-GL).
+	 * This is used for pulling pixel data from an OpenGL buffer into a format
+	 * that the application can recognize/manipulate.
+	 */
+	public int getPixelUnpackAlignment()
+	{
+		return getGLInt(GL.GL_UNPACK_ALIGNMENT);
+	}
+
+	/**
 	 * Sets if the depth test is enabled or not for incoming fragments.
 	 * @param flag	the new value of the flag.
 	 */
@@ -2207,10 +2266,11 @@ public class OGLGraphics
 
 	/**
 	 * Sends a texture into OpenGL's memory for the current 1D texture.
-	 * @param imageData the image to send.
+	 * @param imageData the BGRA image to send.
 	 * @param format the internal format.
 	 * @param width the texture width in texels.
 	 * @param border the texel border to add, if any.
+	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
 	public void setTextureData1D(Buffer imageData, TextureFormat format, int width, int border)
 	{
@@ -2236,9 +2296,10 @@ public class OGLGraphics
 
 	/**
 	 * Sends a subset of data to the currently-bound 1D texture already in OpenGL's memory.
-	 * @param imageData the image to send.
+	 * @param imageData the BGRA image to send.
 	 * @param width the texture width in texels.
 	 * @param xoffs the texel offset.
+	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
 	public void setTextureSubData1D(Buffer imageData, int width, int xoffs)
 	{
@@ -2251,7 +2312,7 @@ public class OGLGraphics
 			0,
 			xoffs,
 			width,
-			GL2.GL_RGBA,
+			GL2.GL_BGRA,
 			GL2.GL_UNSIGNED_BYTE,
 			imageData
 		);
@@ -2307,11 +2368,12 @@ public class OGLGraphics
 	
 	/**
 	 * Sends a texture into OpenGL's memory for the current 2D texture.
-	 * @param imageData the image to send.
+	 * @param imageData the BGRA image to send.
 	 * @param format the internal format.
 	 * @param width the texture width in texels.
 	 * @param height the texture height in texels.
 	 * @param border the texel border to add, if any.
+	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
 	public void setTextureData2D(Buffer imageData, TextureFormat format, int width, int height, int border)
 	{
@@ -2338,11 +2400,12 @@ public class OGLGraphics
 	
 	/**
 	 * Sends a subset of data to the currently-bound 2D texture already in OpenGL's memory.
-	 * @param imageData the image to send.
+	 * @param imageData the BGRA image to send.
 	 * @param width the texture width in texels.
 	 * @param height the texture height in texels.
 	 * @param xoffs the texel offset.
 	 * @param yoffs the texel offset.
+	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
 	public void setTextureSubData2D(Buffer imageData, int width, int height, int xoffs, int yoffs)
 	{
@@ -2432,11 +2495,12 @@ public class OGLGraphics
 	/**
 	 * Sends a texture into OpenGL's memory for the current CubeMap texture.
 	 * @param face the cube face to set.
-	 * @param imageData the image to send.
+	 * @param imageData the BGRA image to send.
 	 * @param format the internal format.
 	 * @param width the texture width in texels.
 	 * @param height the texture height in texels.
 	 * @param border the texel border to add, if any.
+	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
 	public void setTextureDataCube(TextureCubeFace face, Buffer imageData, TextureFormat format, int width, int height, int border)
 	{
@@ -2464,11 +2528,12 @@ public class OGLGraphics
 	/**
 	 * Sends a subset of data to the currently-bound CubeMap texture already in OpenGL's memory.
 	 * @param face the cube face to set.
-	 * @param imageData the image to send.
+	 * @param imageData the BGRA image to send.
 	 * @param width the texture width in texels.
 	 * @param height the texture height in texels.
 	 * @param xoffs the texel offset.
 	 * @param yoffs the texel offset.
+	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
 	public void setTextureSubDataCube(TextureCubeFace face, Buffer imageData, int width, int height, int xoffs, int yoffs)
 	{

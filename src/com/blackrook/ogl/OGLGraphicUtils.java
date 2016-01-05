@@ -13,6 +13,7 @@ package com.blackrook.ogl;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -57,6 +58,22 @@ public final class OGLGraphicUtils
 	    int[] data = new int[imageWidth * imageHeight];
 	    image.getRGB(0, 0, imageWidth, imageHeight, data, 0, imageWidth);
 		intout.put(data);
+	    return out;
+	}
+
+	/**
+	 * Converts color byte data to a BufferedImage.
+	 * @param imageData the input BGRA byte data.
+	 * @param width the width of the resultant image.
+	 * @param height the height of the resultant image.
+	 * @return a new direct {@link ByteBuffer} of the image's byte data.
+	 */
+	public static BufferedImage setImageData(IntBuffer imageData, int width, int height)
+	{
+		BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+	    int[] data = new int[imageData.capacity()];
+	    imageData.get(data);
+	    out.setRGB(0, 0, width, height, data, 0, width);
 	    return out;
 	}
 
@@ -128,6 +145,7 @@ public final class OGLGraphicUtils
 	 * @param source	the source image.
 	 * @param newWidth	the new image width.
 	 * @param newHeight	the new image height.
+	 * @return the an output image where the contents are flipped vertically.
 	 */
 	public static BufferedImage performResizeTrilinear(BufferedImage source, int newWidth, int newHeight)
 	{
@@ -138,6 +156,29 @@ public final class OGLGraphicUtils
 		g2d.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.drawImage(source, 0, 0, newWidth, newHeight, null);
+		g2d.dispose();
+		return out;
+	}
+
+	/**
+	 * Flips an image across one or two axes.
+	 * @param source the source image.
+	 * @param flipX if true, flips horizontally.
+	 * @param flipY if true, flips vertically.
+	 * @return an output image where the contents are flipped according to parameters.
+	 */
+	public static BufferedImage performFlip(BufferedImage source, boolean flipX, boolean flipY)
+	{
+		int width = source.getWidth();
+		int height = source.getHeight();
+		BufferedImage out = new BufferedImage(width, source.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = out.createGraphics();
+		g2d.setComposite(AlphaComposite.Src);
+		AffineTransform transform = g2d.getTransform();
+		transform.concatenate(AffineTransform.getScaleInstance(flipX ? -1.0 : 1.0, flipY ? -1.0 : 1.0));
+		transform.concatenate(AffineTransform.getTranslateInstance(flipX ? -width : 0, flipY ? -height : 0));
+		g2d.setTransform(transform);
+		g2d.drawImage(source, 0, 0, width, height, null);
 		g2d.dispose();
 		return out;
 	}
