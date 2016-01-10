@@ -1151,6 +1151,16 @@ public class OGLGraphics
 	 */
 	public void attribPush(AttribType ... attribs)
 	{
+		attribPush(attribs);
+	}
+
+	/**
+	 * Pushes an array of attributes onto the attribute stack.
+	 * This forgoes a potential memory allocation using the vararg method, {@link #attribPush(AttribType...)}.
+	 * @param attribs the list of attributes to preserve.
+	 */
+	public void attribPushArray(AttribType[] attribs)
+	{
 		int bits = 0;
 		for (AttribType at : attribs)
 			bits |= at.glValue;
