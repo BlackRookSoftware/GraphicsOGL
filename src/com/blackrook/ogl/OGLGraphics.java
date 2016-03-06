@@ -3269,7 +3269,7 @@ public class OGLGraphics
 	 * This sets the vertex pointers.
 	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
 	 * @param width the width of a full set of coordinates (3-dimensional vertices = 3).
-	 * @param stride the distance (in elements) between each vertex. 0 is one after the other.     
+	 * @param stride the distance (in elements) between each vertex.    
 	 * @param offset the offset in each stride where each vertex starts.  
 	 * @see #setBuffer(BufferType, OGLBuffer)
 	 * @see #setVertexArrayEnabled(boolean)   
@@ -3285,7 +3285,7 @@ public class OGLGraphics
 	 * This sets the texture coordinate pointers.
 	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
 	 * @param width the width of a full set of coordinates (2-dimensional coords = 2).
-	 * @param stride the distance (in elements) between each coordinate group. 0 is one after the other.     
+	 * @param stride the distance (in elements) between each coordinate group.     
 	 * @param offset the offset in each stride where each coordinate starts.     
 	 * @see #setBuffer(BufferType, OGLBuffer)
 	 * @see #setTextureCoordArrayEnabled(boolean)   
@@ -3300,7 +3300,7 @@ public class OGLGraphics
 	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
 	 * This sets the normal vector pointers. Always assumes 3-dimensional vectors.
 	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
-	 * @param stride the distance (in elements) between each normal. 0 is one after the other.     
+	 * @param stride the distance (in elements) between each normal.     
 	 * @param offset the offset in each stride where each normal starts.     
 	 * @see #setBuffer(BufferType, OGLBuffer)
 	 * @see #setNormalArrayEnabled(boolean)   
@@ -3316,7 +3316,7 @@ public class OGLGraphics
 	 * This sets the color pointers.
 	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
 	 * @param width the width of a full set of color components (4-component color = 4).
-	 * @param stride the distance (in elements) between each color. 0 is one after the other.     
+	 * @param stride the distance (in elements) between each color.   
 	 * @param offset the offset in each stride where each color starts.     
 	 * @see #setBuffer(BufferType, OGLBuffer)
 	 * @see #setColorArrayEnabled(boolean)   
