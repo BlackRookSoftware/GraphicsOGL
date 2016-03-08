@@ -24,7 +24,7 @@ import java.nio.ShortBuffer;
 
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.glu.GLU;
-
+import com.blackrook.commons.Common;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.math.Matrix4F;
 import com.blackrook.commons.math.RMath;
@@ -1097,6 +1097,7 @@ public class OGLGraphics
 	public void matrixPerpective(float fov, float aspect, float near, float far)
 	{
 		glu.gluPerspective(fov, aspect, near, far);
+		getError();
 	}
 
 	/**
@@ -1111,6 +1112,7 @@ public class OGLGraphics
 	public void matrixFrustum(float left, float right, float bottom, float top, float near, float far)
 	{
 		gl.glFrustum(left, right, bottom, top, near, far);
+		getError();
 	}
 
 	/**
@@ -1125,6 +1127,9 @@ public class OGLGraphics
 	public void matrixOrtho(float left, float right, float bottom, float top, float near, float far)
 	{
 		gl.glOrtho(left, right, bottom, top, near, far);
+		if (left == right || bottom == top || near == far)
+			Common.noop();
+		getError();
 	}
 
 	/**
@@ -1143,6 +1148,7 @@ public class OGLGraphics
 	public void matrixLookAt(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ)
 	{
 		glu.gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+		getError();
 	}
 	
 	/**
