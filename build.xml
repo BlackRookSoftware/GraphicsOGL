@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Copyright (c) 2014 Black Rook Software
+    Copyright (c) 2014 - 2016 Black Rook Software
     All rights reserved. This program and the accompanying materials
     are made available under the terms of the GNU Lesser Public License v2.1
     which accompanies this distribution, and is available at
@@ -44,14 +44,6 @@
 		com.blackrook.ogl.mesh,
 		com.blackrook.ogl.mesh.util,
 		com.blackrook.ogl.node,
-		com.blackrook.ogl.object,
-		com.blackrook.ogl.object.buffer,
-		com.blackrook.ogl.object.framebuffer,
-		com.blackrook.ogl.object.list,
-		com.blackrook.ogl.object.query,
-		com.blackrook.ogl.object.shader,
-		com.blackrook.ogl.object.shader.uniform,
-		com.blackrook.ogl.object.texture,
 		"
 	/>
 
@@ -78,7 +70,7 @@
             <link href="http://blackrooksoftware.com/docs/common/"/>
         	<link href="http://jogamp.org/deployment/jogamp-next/javadoc/jogl/javadoc/"/>
         	<link href="http://jogamp.org/deployment/jogamp-next/javadoc/gluegen/javadoc/"/>
-            <link href="http://download.oracle.com/javase/6/docs/api/"/>
+            <link href="http://download.oracle.com/javase/7/docs/api/"/>
         </javadoc>
     </target>	
 
