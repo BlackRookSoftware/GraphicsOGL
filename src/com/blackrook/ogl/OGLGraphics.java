@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 Black Rook Software
+ * Copyright (c) 2014 - 2016 Black Rook Software
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -24,7 +24,6 @@ import java.nio.ShortBuffer;
 
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.glu.GLU;
-import com.blackrook.commons.Common;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.math.Matrix4F;
 import com.blackrook.commons.math.RMath;
@@ -1093,6 +1092,7 @@ public class OGLGraphics
 	 * @param aspect the aspect ratio, usually view width over view height.
 	 * @param near the near clipping plane on the Z-Axis.
 	 * @param far the far clipping plane on the Z-Axis.
+	 * @throws GraphicsException if <code>fov == 0 || aspect == 0 || near == far</code>.
 	 */
 	public void matrixPerpective(float fov, float aspect, float near, float far)
 	{
@@ -1108,6 +1108,7 @@ public class OGLGraphics
 	 * @param top the upper clipping plane on the Y-Axis.
 	 * @param near the near clipping plane on the Z-Axis.
 	 * @param far the far clipping plane on the Z-Axis.
+	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
 	 */
 	public void matrixFrustum(float left, float right, float bottom, float top, float near, float far)
 	{
@@ -1123,12 +1124,11 @@ public class OGLGraphics
 	 * @param top the upper clipping plane on the Y-Axis.
 	 * @param near the near clipping plane on the Z-Axis.
 	 * @param far the far clipping plane on the Z-Axis.
+	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
 	 */
 	public void matrixOrtho(float left, float right, float bottom, float top, float near, float far)
 	{
 		gl.glOrtho(left, right, bottom, top, near, far);
-		if (left == right || bottom == top || near == far)
-			Common.noop();
 		getError();
 	}
 
