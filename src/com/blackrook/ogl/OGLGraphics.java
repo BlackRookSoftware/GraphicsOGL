@@ -131,8 +131,6 @@ public class OGLGraphics
 	/** Time between frames. */
 	private long currentTimeStepNanos;
 	
-	/** Current display list. */
-	private OGLDisplayList currentDisplayList; 
 	/** Current running occlusion query. */
 	private OGLOcclusionQuery currentOcclusionQuery;
 
@@ -214,7 +212,6 @@ public class OGLGraphics
 	{
 	    // Clean up abandoned objects.
 	    OGLBuffer.destroyUndeleted(this);
-	    OGLDisplayList.destroyUndeleted(this);
 	    OGLFrameBuffer.destroyUndeleted(this);
 	    OGLRenderBuffer.destroyUndeleted(this);
 	    OGLOcclusionQuery.destroyUndeleted(this);
@@ -1292,19 +1289,36 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Sets the color for a specular component for a light. 
+	 * Sets the color for a ambient component for a light. 
 	 * @param sourceId the light source id.
 	 * @param color the color to use.
 	 * @throws GraphicsException if the specified sourceId is not a valid one.
 	 * @see OGLGraphics#getMaxLights()
 	 */
-	public void setLightSpecularColor(int sourceId, OGLColor color)
+	public void setLightAmbientColor(int sourceId, OGLColor color)
 	{
-		setLightSpecularColor(sourceId, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+		setLightAmbientColor(sourceId, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	}
 
 	/**
-	 * Sets the color for a specular component for a light. 
+	 * Sets the color for a ambient component for a light. 
+	 * @param sourceId the light source id.
+	 * @param argbColor the ARGB color to set.
+	 * @throws GraphicsException if the specified sourceId is not a valid one.
+	 * @see OGLGraphics#getMaxLights()
+	 */
+	public void setLightAmbientColor(int sourceId, int argbColor)
+	{
+		setLightAmbientColor(sourceId, 			
+			((0x00ff0000 & argbColor) >>> 16) / 255f,
+			((0x0000ff00 & argbColor) >>> 8) / 255f,
+			(0x000000ff & argbColor) / 255f,
+			((0xff000000 & argbColor) >>> 24) / 255f
+		);
+	}
+
+	/**
+	 * Sets the color for a ambient component for a light. 
 	 * @param sourceId the light source id.
 	 * @param red the red component of the color to use (0 to 1).
 	 * @param green the green component of the color to use (0 to 1).
@@ -1313,7 +1327,7 @@ public class OGLGraphics
 	 * @throws GraphicsException if the specified sourceId is not a valid one.
 	 * @see OGLGraphics#getMaxLights()
 	 */
-	public void setLightSpecularColor(int sourceId, float red, float green, float blue, float alpha)
+	public void setLightAmbientColor(int sourceId, float red, float green, float blue, float alpha)
 	{
 		if (sourceId < 0 || sourceId >= maxLights)
 			throw new GraphicsException("Not a valid light id.");
@@ -1339,6 +1353,23 @@ public class OGLGraphics
 	/**
 	 * Sets the color for a diffuse component for a light. 
 	 * @param sourceId the light source id.
+	 * @param argbColor the ARGB color to set.
+	 * @throws GraphicsException if the specified sourceId is not a valid one.
+	 * @see OGLGraphics#getMaxLights()
+	 */
+	public void setLightDiffuseColor(int sourceId, int argbColor)
+	{
+		setLightDiffuseColor(sourceId, 			
+			((0x00ff0000 & argbColor) >>> 16) / 255f,
+			((0x0000ff00 & argbColor) >>> 8) / 255f,
+			(0x000000ff & argbColor) / 255f,
+			((0xff000000 & argbColor) >>> 24) / 255f
+		);
+	}
+
+	/**
+	 * Sets the color for a diffuse component for a light. 
+	 * @param sourceId the light source id.
 	 * @param red the red component of the color to use (0 to 1).
 	 * @param green the green component of the color to use (0 to 1).
 	 * @param blue the blue component of the color to use (0 to 1).
@@ -1358,19 +1389,36 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Sets the color for a ambient component for a light. 
+	 * Sets the color for a specular component for a light. 
 	 * @param sourceId the light source id.
 	 * @param color the color to use.
 	 * @throws GraphicsException if the specified sourceId is not a valid one.
 	 * @see OGLGraphics#getMaxLights()
 	 */
-	public void setLightAmbientColor(int sourceId, OGLColor color)
+	public void setLightSpecularColor(int sourceId, OGLColor color)
 	{
-		setLightAmbientColor(sourceId, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+		setLightSpecularColor(sourceId, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	}
 
 	/**
-	 * Sets the color for a ambient component for a light. 
+	 * Sets the color for a specular component for a light. 
+	 * @param sourceId the light source id.
+	 * @param argbColor the ARGB color to set.
+	 * @throws GraphicsException if the specified sourceId is not a valid one.
+	 * @see OGLGraphics#getMaxLights()
+	 */
+	public void setLightSpecularColor(int sourceId, int argbColor)
+	{
+		setLightSpecularColor(sourceId, 			
+			((0x00ff0000 & argbColor) >>> 16) / 255f,
+			((0x0000ff00 & argbColor) >>> 8) / 255f,
+			(0x000000ff & argbColor) / 255f,
+			((0xff000000 & argbColor) >>> 24) / 255f
+		);
+	}
+
+	/**
+	 * Sets the color for a specular component for a light. 
 	 * @param sourceId the light source id.
 	 * @param red the red component of the color to use (0 to 1).
 	 * @param green the green component of the color to use (0 to 1).
@@ -1379,7 +1427,7 @@ public class OGLGraphics
 	 * @throws GraphicsException if the specified sourceId is not a valid one.
 	 * @see OGLGraphics#getMaxLights()
 	 */
-	public void setLightAmbientColor(int sourceId, float red, float green, float blue, float alpha)
+	public void setLightSpecularColor(int sourceId, float red, float green, float blue, float alpha)
 	{
 		if (sourceId < 0 || sourceId >= maxLights)
 			throw new GraphicsException("Not a valid light id.");
@@ -1659,7 +1707,7 @@ public class OGLGraphics
 	 * Sets the current color used for fog as an ARGB integer.
 	 * @param argb the 32-bit color as an integer.
 	 */
-	public void setFogColorARGB(int argb)
+	public void setFogColor(int argb)
 	{
 		float a = ((argb & 0xFF000000) >>> 24) / 255f; 
 		float r = ((argb & 0x00FF0000) >>> 16) / 255f; 
@@ -2963,47 +3011,6 @@ public class OGLGraphics
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
 	}
 
-	/**
-	 * Creates a new display list.
-	 * @return a new, uninitialized display list object.
-	 * @throws GraphicsException if the object could not be created.
-	 */
-	public OGLDisplayList createList()
-	{
-		return new OGLDisplayList(this);
-	}
-	
-	/**
-	 * Initializes a display list for compiling draw commands.
-	 * While one list is started, another one cannot be.
-	 * NOTE: Not all calls to OGLGraphics can be encapsulated in a list!
-	 * @param list the list object to start.
-	 * @throws GraphicsException if another list has already been started, but not ended.
-	 */
-	public void startList(OGLDisplayList list)
-	{
-		if (currentDisplayList != null)
-			throw new GraphicsException("A list has already been started.");
-		clearError();
-		gl.glNewList(list.getGLId(), GL2.GL_COMPILE);
-		getError();
-		currentDisplayList = list;
-	}
-	
-	/**
-	 * Ends the current list for compiling draw commands.
-	 * Cannot end a list without starting one.
-	 * @throws GraphicsException if another list has not been started, 
-	 * or this is called when a different list was started.
-	 */
-	public void endList()
-	{
-		if (currentDisplayList == null)
-			throw new GraphicsException("Attempt to end list without starting one.");
-		gl.glEndList();
-		currentDisplayList = null;
-	}
-	
 	/**
 	 * Creates a new occlusion query.
 	 * @return a new occlusion query object.
