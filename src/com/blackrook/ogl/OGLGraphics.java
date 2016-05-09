@@ -1130,6 +1130,64 @@ public class OGLGraphics
 	}
 
 	/**
+	 * Multiplies the current matrix by an aspect-adjusted orthographic projection matrix using the canvas dimensions.
+	 * @param viewWidth the original view width.
+	 * @param viewHeight the original view height.
+	 * @param near the near clipping plane on the Z-Axis.
+	 * @param far the far clipping plane on the Z-Axis.
+	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
+	 */
+	public void matrixAspectOrtho(float viewWidth, float viewHeight, float near, float far)
+	{
+		matrixAspectOrtho(viewWidth, viewHeight, getCanvasWidth(), getCanvasHeight(), near, far);
+	}
+	
+	/**
+	 * Multiplies the current matrix by an aspect-adjusted orthographic projection matrix.
+	 * @param viewWidth the original view width.
+	 * @param viewHeight the original view height.
+	 * @param canvasWidth the canvas view width.
+	 * @param canvasHeight the canvas view height.
+	 * @param near the near clipping plane on the Z-Axis.
+	 * @param far the far clipping plane on the Z-Axis.
+	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
+	 */
+	public void matrixAspectOrtho(float viewWidth, float viewHeight, float canvasWidth, float canvasHeight, float near, float far)
+	{
+		float left = 0f;
+		float right = 0f;
+		float bottom = 0f;
+		float top = 0f;
+		
+		float viewAspect = viewWidth / viewHeight;
+		float canvasAspect = canvasWidth / canvasHeight;
+        
+        if (canvasAspect >= viewAspect)
+        {
+        	bottom = 0f;
+            top = viewHeight;
+
+            float axis = canvasAspect * viewHeight;
+
+            left = -(axis - viewWidth) / 2f;
+            right = viewWidth + (axis - viewWidth) / 2f;
+        }
+        else
+        {
+        	// FIXME: Not correct.
+            left = 0f;
+            right = viewWidth;
+
+            float axis = canvasAspect * viewWidth;
+
+        	bottom = -(axis - viewHeight) / 2f;
+            top = viewHeight + (axis - viewHeight) / 2f;
+        }
+		
+        matrixOrtho(left, right, bottom, top, near, far);	
+	}
+
+	/**
 	 * Multiplies a "look at" matrix to the current matrix.
 	 * This sets up the matrix to look at a place in the world (if modelview).
 	 * @param eyeX the point to look at, X-coordinate.
