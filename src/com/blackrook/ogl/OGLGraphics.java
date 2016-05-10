@@ -1131,57 +1131,34 @@ public class OGLGraphics
 
 	/**
 	 * Multiplies the current matrix by an aspect-adjusted orthographic projection matrix using the canvas dimensions.
-	 * @param viewWidth the original view width.
-	 * @param viewHeight the original view height.
+	 * @param targetAspect the target orthographic 
+	 * @param left the left clipping plane on the X-Axis.
+	 * @param right the right clipping plane on the X-Axis.
+	 * @param bottom the bottom clipping plane on the Y-Axis.
+	 * @param top the upper clipping plane on the Y-Axis.
 	 * @param near the near clipping plane on the Z-Axis.
 	 * @param far the far clipping plane on the Z-Axis.
 	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
 	 */
-	public void matrixAspectOrtho(float viewWidth, float viewHeight, float near, float far)
+	public void matrixAspectOrtho(float targetAspect, float left, float right, float bottom, float top, float near, float far)
 	{
-		matrixAspectOrtho(viewWidth, viewHeight, getCanvasWidth(), getCanvasHeight(), near, far);
-	}
-	
-	/**
-	 * Multiplies the current matrix by an aspect-adjusted orthographic projection matrix.
-	 * @param viewWidth the original view width.
-	 * @param viewHeight the original view height.
-	 * @param canvasWidth the canvas view width.
-	 * @param canvasHeight the canvas view height.
-	 * @param near the near clipping plane on the Z-Axis.
-	 * @param far the far clipping plane on the Z-Axis.
-	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
-	 */
-	public void matrixAspectOrtho(float viewWidth, float viewHeight, float canvasWidth, float canvasHeight, float near, float far)
-	{
-		float left = 0f;
-		float right = 0f;
-		float bottom = 0f;
-		float top = 0f;
-		
+		float viewWidth = Math.max(left, right) - Math.min(left, right);
+		float viewHeight = Math.max(bottom, top) - Math.min(bottom, top);
 		float viewAspect = viewWidth / viewHeight;
-		float canvasAspect = canvasWidth / canvasHeight;
         
-        if (canvasAspect >= viewAspect)
+        if (targetAspect >= viewAspect)
         {
-        	bottom = 0f;
-            top = viewHeight;
-
-            float axis = canvasAspect * viewHeight;
-
-            left = -(axis - viewWidth) / 2f;
-            right = viewWidth + (axis - viewWidth) / 2f;
+            float axis = targetAspect * viewHeight;
+            float widthDiff = (axis - viewWidth) / 2f;
+            right = left + viewWidth + widthDiff;
+            left = left - widthDiff;
         }
         else
         {
-        	// FIXME: Not correct.
-            left = 0f;
-            right = viewWidth;
-
-            float axis = canvasAspect * viewWidth;
-
-        	bottom = -(axis - viewHeight) / 2f;
-            top = viewHeight + (axis - viewHeight) / 2f;
+            float axis = (1.0f / targetAspect) * viewWidth;
+            float heightDiff = (axis - viewHeight) / 2f;
+            top = bottom + viewHeight + heightDiff;
+        	bottom = bottom - heightDiff;
         }
 		
         matrixOrtho(left, right, bottom, top, near, far);	
