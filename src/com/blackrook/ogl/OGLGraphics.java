@@ -998,7 +998,7 @@ public class OGLGraphics
 	/**
 	 * Loads a matrix's contents into the current selected matrix.
 	 */
-	public void matrixLoad(Matrix4F matrix)
+	public void matrixSet(Matrix4F matrix)
 	{
 		matrixLoad(matrix.getArray());
 	}
