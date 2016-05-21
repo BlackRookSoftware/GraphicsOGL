@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL3;
 
 /**
  * Enumeration of render buffer formats.
@@ -18,10 +18,10 @@ import com.jogamp.opengl.GL2;
  */
 public enum RenderbufferFormat
 {
-	RGB(GL2.GL_RGB),
-	RGBA(GL2.GL_RGBA),
-	DEPTH(GL2.GL_DEPTH_COMPONENT),
-	STENCIL(GL2.GL_STENCIL_INDEX);
+	RGB(GL3.GL_RGB),
+	RGBA(GL3.GL_RGBA),
+	DEPTH(GL3.GL_DEPTH_COMPONENT),
+	STENCIL(GL3.GL_STENCIL_INDEX);
 	
 	public final int glid;
 	private RenderbufferFormat(int id) {glid = id;}

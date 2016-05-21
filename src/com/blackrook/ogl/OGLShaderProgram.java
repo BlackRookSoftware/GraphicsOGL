@@ -55,7 +55,7 @@ public abstract class OGLShaderProgram extends OGLObject
 	 */
 	protected void construct(OGLGraphics g, String streamName, String sourceCode)
 	{
-		GL2 gl = g.getGL();
+		GL3 gl = g.getGL();
 		g.clearError();
 		gl.glShaderSource(getGLId(), 1, new String[]{sourceCode}, (int[])null, 0);
 		compile(g, streamName);
@@ -65,11 +65,11 @@ public abstract class OGLShaderProgram extends OGLObject
 	// Compiles the program.
 	private void compile(OGLGraphics g, String streamName)
 	{
-		GL2 gl = g.getGL();
+		GL3 gl = g.getGL();
 		int[] compCheck = new int[1];
         gl.glCompileShader(getGLId());
         log = readLog(g);
-        gl.glGetObjectParameterivARB(getGLId(), GL2.GL_OBJECT_COMPILE_STATUS_ARB, compCheck, 0);
+        gl.glGetProgramiv(getGLId(), GL3.GL_COMPILE_STATUS, compCheck, 0);
         if (compCheck[0] == 0)
         	throw new GraphicsException("Failed to compile \""+streamName+"\"\n"+log);
 	}
@@ -77,13 +77,13 @@ public abstract class OGLShaderProgram extends OGLObject
 	// Reads and returns the log from this program's compilation.
 	private String readLog(OGLGraphics g)
 	{
-		GL2 gl = g.getGL();
+		GL3 gl = g.getGL();
 		int[] loglen = new int[1];
-        gl.glGetObjectParameterivARB(getGLId(), GL2.GL_OBJECT_INFO_LOG_LENGTH_ARB, loglen, 0);
+        gl.glGetProgramiv(getGLId(), GL3.GL_INFO_LOG_LENGTH, loglen, 0);
         if (loglen[0] <= 1)
         	return "";
         byte[] log = new byte[loglen[0]];
-        gl.glGetInfoLogARB(getGLId(), loglen[0], loglen, 0, log, 0);
+        gl.glGetProgramInfoLog(getGLId(), loglen[0], loglen, 0, log, 0);
         return new String(log).substring(0,loglen[0]-1);
 	}
 

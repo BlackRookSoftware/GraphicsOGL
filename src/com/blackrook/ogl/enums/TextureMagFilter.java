@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL3;
 
 /**
  * Magnification filters.
@@ -19,9 +19,9 @@ import com.jogamp.opengl.GL2;
 public enum TextureMagFilter
 {
 	/** Nearest magnification - color using nearest neighbor (aliased - "pixelates" textures). */
-	NEAREST(GL2.GL_NEAREST),
+	NEAREST(GL3.GL_NEAREST),
 	/** Linear magnification - color using linear interpolation ("smoothes" textures). */
-	LINEAR(GL2.GL_LINEAR);
+	LINEAR(GL3.GL_LINEAR);
 	
 	public final int glid;
 	private TextureMagFilter(int id) {glid = id;}

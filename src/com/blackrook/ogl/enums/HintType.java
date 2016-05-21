@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL3;
 
 /**
  * Hint enum types for GL Hints.
@@ -18,20 +18,15 @@ import com.jogamp.opengl.GL2;
  */
 public enum HintType
 {
-	/** Point smoothing hints. */
-	POINT_SMOOTHING(GL2.GL_POINT_SMOOTH_HINT),
 	/** Line smoothing hints. */
-	LINE_SMOOTHING(GL2.GL_LINE_SMOOTH_HINT),
+	LINE_SMOOTHING(GL3.GL_LINE_SMOOTH_HINT),
 	/** Polygon smoothing hints. */
-	POLYGON_SMOOTHING(GL2.GL_POLYGON_SMOOTH_HINT),
-	/** Fog rendering hints. */
-	FOG(GL2.GL_FOG_HINT),
+	POLYGON_SMOOTHING(GL3.GL_POLYGON_SMOOTH_HINT),
 	/** Mipmap generation hints. */
-	MIPMAPPING(GL2.GL_GENERATE_MIPMAP_HINT),
+	MIPMAPPING(GL3.GL_GENERATE_MIPMAP_HINT),
 	/** Texture compression hint. */
-	TEXTURE_COMPRESSION(GL2.GL_TEXTURE_COMPRESSION_HINT),
-	/** Perspective compression hint. */
-	PERSPECTIVE_CORRECTION(GL2.GL_PERSPECTIVE_CORRECTION_HINT);
+	TEXTURE_COMPRESSION(GL3.GL_TEXTURE_COMPRESSION_HINT),
+	;
 	
 	public final int glValue;
 	HintType(int gltype) 

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.*;
+import com.jogamp.opengl.GL3;
 
 /**
  * Enum for fill modes.
@@ -19,11 +19,11 @@ import com.jogamp.opengl.*;
 public enum FillMode
 {
 	/** Points rendered only. */
-	POINTS(GL2.GL_POINT),
+	POINTS(GL3.GL_POINT),
 	/** Lines/edges rendered only. */
-	LINES(GL2.GL_LINE),
+	LINES(GL3.GL_LINE),
 	/** Filled polygons. */
-	FILLED(GL2.GL_FILL);
+	FILLED(GL3.GL_FILL);
 
 	public final int glValue;
 	FillMode(int gltype) 

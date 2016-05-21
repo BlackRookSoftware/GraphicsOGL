@@ -24,13 +24,13 @@ import java.nio.ShortBuffer;
 
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.util.gl2.GLUT;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.math.Matrix4F;
 import com.blackrook.commons.math.RMath;
 import com.blackrook.ogl.data.*;
 import com.blackrook.ogl.enums.*;
 import com.blackrook.ogl.exception.GraphicsException;
-import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
  * A graphics toolkit-type of implementation of OpenGL.
@@ -39,12 +39,10 @@ import com.jogamp.opengl.util.gl2.GLUT;
  */
 public class OGLGraphics
 {	
-	/** GL 1.0 - 3.0 Interface. */
-	private GL2 gl;
+	/** GL 3.0 Interface. */
+	private GL3 gl;
 	/** GLU Interface. */
 	private GLU glu;
-	/** GLUT Interface. */
-	private GLUT glut;
 	
 	/** Graphics system instance that this belongs to. */
 	private OGLSystem glSystem;
@@ -92,10 +90,6 @@ public class OGLGraphics
 	/** Flag for presence of point sprite extension. */
 	private boolean pointSpritesPresent;
 	
-	/** Maximum bindable lights. */
-	private int maxLights;
-	/** Maximum texture units. */
-	private int maxMultitexture;
 	/** Maximum texture units. */
 	private int maxTextureUnits;
 	/** Maximum texture size. */
@@ -149,16 +143,15 @@ public class OGLGraphics
 	{
 		glSystem = system;
 
-		gl = (GL2)drawable.getGL();
+		gl = (GL3)drawable.getGL();
 		glu = new GLU();
-		glut = new GLUT();
 		
 		getError();
 		
-		glRenderer = gl.glGetString(GL2.GL_RENDERER);
-		glVersion = gl.glGetString(GL2.GL_VERSION);
-		glVendor = gl.glGetString(GL2.GL_VENDOR);
-		glExtensions = gl.glGetString(GL2.GL_EXTENSIONS);
+		glRenderer = gl.glGetString(GL3.GL_RENDERER);
+		glVersion = gl.glGetString(GL3.GL_VERSION);
+		glVendor = gl.glGetString(GL3.GL_VENDOR);
+		glExtensions = gl.glGetString(GL3.GL_EXTENSIONS);
 
 		getError();
 		
@@ -223,7 +216,7 @@ public class OGLGraphics
 	/**
 	 * Gets the current GL context.
 	 */
-	final GL2 getGL()
+	final GL3 getGL()
 	{
 		return gl;
 	}
@@ -234,14 +227,6 @@ public class OGLGraphics
 	final GLU getGLU()
 	{
 		return glu;
-	}
-
-	/**
-	 * Gets the current GLUT context.
-	 */
-	final GLUT getGLUT()
-	{
-		return glut;
 	}
 
 	/** Returns a reference to the parent {@link OGLSystem} that created this. */
@@ -287,21 +272,19 @@ public class OGLGraphics
 		pointSmoothingPresent = extensionIsPresent("gl_arb_point_smooth");
 		pointSpritesPresent = extensionIsPresent("gl_arb_point_sprite");
 
-		maxLights = getGLInt(GL2.GL_MAX_LIGHTS);
-		maxMultitexture = getGLInt(GL2.GL_MAX_TEXTURE_UNITS);
-		maxTextureUnits = getGLInt(GL2.GL_MAX_TEXTURE_IMAGE_UNITS_ARB);
-		maxTextureSize = getGLInt(GL2.GL_MAX_TEXTURE_SIZE);
-		maxRenderBufferSize = getGLInt(GL2.GL_MAX_RENDERBUFFER_SIZE);
-		maxRenderBufferColorAttachments = getGLInt(GL2.GL_MAX_COLOR_ATTACHMENTS);
+		maxTextureUnits = getGLInt(GL3.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+		maxTextureSize = getGLInt(GL3.GL_MAX_TEXTURE_SIZE);
+		maxRenderBufferSize = getGLInt(GL3.GL_MAX_RENDERBUFFER_SIZE);
+		maxRenderBufferColorAttachments = getGLInt(GL3.GL_MAX_COLOR_ATTACHMENTS);
 		if (occlusionQueryExtensionPresent)
 		{
-			gl.glGetQueryiv(GL2.GL_SAMPLES_PASSED, GL2.GL_QUERY_COUNTER_BITS, INT_STATE, 0);
+			gl.glGetQueryiv(GL3.GL_SAMPLES_PASSED, GL3.GL_QUERY_COUNTER_BITS, INT_STATE, 0);
 			queryCounterBitDepth = INT_STATE[0];
 		}
-		getGLFloats(GL2.GL_POINT_SIZE_RANGE, FLOAT_STATE);
+		getGLFloats(GL3.GL_POINT_SIZE_RANGE, FLOAT_STATE);
 		minPointSize = FLOAT_STATE[0];
 		maxPointSize = FLOAT_STATE[1];
-		getGLFloats(GL2.GL_LINE_WIDTH_RANGE, FLOAT_STATE);
+		getGLFloats(GL3.GL_LINE_WIDTH_RANGE, FLOAT_STATE);
 		minLineWidth = FLOAT_STATE[0];
 		maxLineWidth = FLOAT_STATE[1];
 	}
@@ -366,24 +349,11 @@ public class OGLGraphics
 	}
 	
 	/**
-	 * Enables/disables an OpenGL client state bit.
-	 * @param glEnum the OpenGL enumerant.
-	 * @param flag if true, enable. if false, disable.
-	 */
-	protected final void glClientFlagSet(int glEnum, boolean flag)
-	{
-		if (flag)
-			gl.glEnableClientState(glEnum);
-		else
-			gl.glDisableClientState(glEnum);
-	}
-	
-	/**
 	 * Converts a Java boolean to an OpenGL GL_TRUE or GL_FALSE value.
 	 */
 	protected final int toGLBool(boolean val)
 	{
-		return val ? GL2.GL_TRUE : GL2.GL_FALSE;
+		return val ? GL3.GL_TRUE : GL3.GL_FALSE;
 	}
 	
 	/**
@@ -450,30 +420,6 @@ public class OGLGraphics
 		return currentFrame;
 	}
 	
-	/** 
-	 * Returns the maximum amount of lights. 
-	 */
-	public final int getMaxLights()
-	{
-		return maxLights;
-	}
-
-	/**
-	 * Get the maximum amount of multitexture units.
-	 */
-	public final int getMaxMultitexture()
-	{
-		return maxMultitexture;
-	}
-
-	/**
-	 * Get the maximum amount of bindable texture units.
-	 */
-	public final int getMaxTextureUnits()
-	{
-		return maxTextureUnits;
-	}
-
 	/**
 	 * Get max texture size in pixels.
 	 */
@@ -730,7 +676,7 @@ public class OGLGraphics
 	{
 		if (errorIgnoring)
 			return;
-		while (gl.glGetError() != GL2.GL_NO_ERROR);
+		while (gl.glGetError() != GL3.GL_NO_ERROR);
 	}
 
 	/**
@@ -742,7 +688,7 @@ public class OGLGraphics
 		if (errorIgnoring)
 			return;
 		int error = gl.glGetError();
-		if (error != GL2.GL_NO_ERROR)
+		if (error != GL3.GL_NO_ERROR)
 			throw new GraphicsException("OpenGL raised error: "+glu.gluErrorString(error));
 	}
 
@@ -832,14 +778,6 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Set light shading type.
-	 */
-	public void setShadeType(LightShadeType shade)
-	{
-		gl.glShadeModel(shade.glValue);
-	}
-
-	/**
 	 * Set face winding to determine the front face.
 	 */
 	public void setFaceFront(FaceSide.Direction faceFront)
@@ -881,21 +819,21 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Sets the maximum size for the diameter of Point geometry when
-	 * it is attenuated by point distance from the "camera".
+	 * Sets the point sprite coordinate origin.
+	 * @param origin the sprite's origin point.
 	 */
-	public void setPointAttenuationMaximum(float size)
+	public void setPointSpriteCoordOrigin(SpriteOrigin origin)
 	{
-		gl.glPointParameterf(GL2.GL_POINT_SIZE_MAX, size);
+		gl.glPointParameteri(GL3.GL_POINT_SPRITE_COORD_ORIGIN, origin.glValue);
 	}
 
 	/**
-	 * Sets the minimum size for the diameter of Point geometry when
-	 * it is attenuated by point distance from the "camera".
+	 * Sets the threshold value to which point sizes are clamped if they exceed the specified value.
+	 * @param size the size value.
 	 */
-	public void setPointAttenuationMinimum(float size)
+	public void setPointFadeThreshold(float size)
 	{
-		gl.glPointParameterf(GL2.GL_POINT_SIZE_MIN, size);
+		gl.glPointParameterf(GL3.GL_POINT_FADE_THRESHOLD_SIZE, size);
 	}
 
 	/**
@@ -910,7 +848,7 @@ public class OGLGraphics
 		FLOAT_STATE[0] = constant;
 		FLOAT_STATE[1] = linear;
 		FLOAT_STATE[2] = quadratic;
-		gl.glPointParameterfv(GL2.GL_POINT_DISTANCE_ATTENUATION, FLOAT_STATE, 0);
+		gl.glPointParameterfv(GL3.GL_POINT_DISTANCE_ATTENUATION, FLOAT_STATE, 0);
 	}
 
 	/**
@@ -947,850 +885,6 @@ public class OGLGraphics
 	}
 	
 	/**
-	 * Sets the current matrix for matrix operations.
-	 * Note that other commands may change this mode automatically.
-	 * @param mode the matrix mode to set.
-	 */
-	public void matrixMode(MatrixType mode)
-	{
-		gl.glMatrixMode(mode.glValue);
-	}
-
-	/**
-	 * Loads the identity matrix into the current selected matrix.
-	 */
-	public void matrixReset()
-	{
-		gl.glLoadIdentity();
-	}
-
-	/**
-	 * Reads a current matrix into an array.
-	 * @param matrixType the type of matrix to load.
-	 * @param outArray the output array. Must be length 16 or greater.
-	 * @param offset the target offset into the array. Offset + 16 must not exceed the array length.
-	 */
-	public void matrixGet(MatrixType matrixType, float[] outArray, int offset)
-	{
-		gl.glGetFloatv(matrixType.glReadValue, outArray, offset);
-	}
-	
-	/**
-	 * Reads a current matrix into an array.
-	 * @param matrixType the type of matrix to load.
-	 * @param matrix the output matrix.
-	 */
-	public void matrixGet(MatrixType matrixType, Matrix4F matrix)
-	{
-		gl.glGetFloatv(matrixType.glReadValue, matrix.getArray(), 0);
-	}
-	
-	/**
-	 * Loads a matrix's contents from a column-major array into the current selected matrix.
-	 */
-	public void matrixLoad(float[] matrixArray)
-	{
-		if (matrixArray.length < 16)
-			throw new GraphicsException("The array is less than 16 components.");
-		gl.glLoadMatrixf(matrixArray, 0);
-	}
-
-	/**
-	 * Loads a matrix's contents into the current selected matrix.
-	 */
-	public void matrixSet(Matrix4F matrix)
-	{
-		matrixLoad(matrix.getArray());
-	}
-
-	/**
-	 * Multiplies a matrix into the current selected matrix from a column-major array into.
-	 */
-	public void matrixMultiply(float[] matrixArray)
-	{
-		if (matrixArray.length < 16)
-			throw new GraphicsException("The array is less than 16 components.");
-		gl.glMultMatrixf(matrixArray, 0);
-	}
-
-	/**
-	 * Multiplies a matrix into the current selected matrix.
-	 */
-	public void matrixMultiply(Matrix4F matrix)
-	{
-		matrixMultiply(matrix.getArray());
-	}
-
-	/**
-	 * Pushes a copy of the current matrix onto the current selected stack.
-	 */
-	public void matrixPush()
-	{
-		gl.glPushMatrix();
-	}
-
-	/**
-	 * Pops the current matrix off of the current selected stack.
-	 */
-	public void matrixPop()
-	{
-		gl.glPopMatrix();
-	}
-
-	/**
-	 * Translates the current matrix by a set of units.
-	 * This is applied via multiplication with the current matrix.
-	 */
-	public void matrixTranslate(float x, float y, float z)
-	{
-		gl.glTranslatef(x, y, z);
-	}
-
-	/**
-	 * Rotates the current matrix by an amount of DEGREES around the X-Axis.
-	 * This is applied via multiplication with the current matrix.
-	 */
-	public void matrixRotateX(float degrees)
-	{
-		gl.glRotatef(degrees, 1, 0, 0);
-	}
-
-	/**
-	 * Rotates the current matrix by an amount of DEGREES around the Y-Axis.
-	 * This is applied via multiplication with the current matrix.
-	 */
-	public void matrixRotateY(float degrees)
-	{
-		gl.glRotatef(degrees, 0, 1, 0);
-	}
-
-	/**
-	 * Rotates the current matrix by an amount of DEGREES around the Z-Axis.
-	 * This is applied via multiplication with the current matrix.
-	 */
-	public void matrixRotateZ(float degrees)
-	{
-		gl.glRotatef(degrees, 0, 0, 1);
-	}
-
-	/**
-	 * Scales the current matrix by a set of scalars that 
-	 * correspond to each axis.
-	 * This is applied via multiplication with the current matrix.
-	 */
-	public void matrixScale(float x, float y, float z)
-	{
-		gl.glScalef(x, y, z);
-	}
-
-	/**
-	 * Multiplies the current matrix by a symmetric perspective projection matrix.
-	 * @param fov front of view angle in degrees.
-	 * @param aspect the aspect ratio, usually view width over view height.
-	 * @param near the near clipping plane on the Z-Axis.
-	 * @param far the far clipping plane on the Z-Axis.
-	 * @throws GraphicsException if <code>fov == 0 || aspect == 0 || near == far</code>.
-	 */
-	public void matrixPerpective(float fov, float aspect, float near, float far)
-	{
-		glu.gluPerspective(fov, aspect, near, far);
-		getError();
-	}
-
-	/**
-	 * Multiplies the current matrix by a frustum projection matrix.
-	 * @param left the left clipping plane on the X-Axis.
-	 * @param right the right clipping plane on the X-Axis.
-	 * @param bottom the bottom clipping plane on the Y-Axis.
-	 * @param top the upper clipping plane on the Y-Axis.
-	 * @param near the near clipping plane on the Z-Axis.
-	 * @param far the far clipping plane on the Z-Axis.
-	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
-	 */
-	public void matrixFrustum(float left, float right, float bottom, float top, float near, float far)
-	{
-		gl.glFrustum(left, right, bottom, top, near, far);
-		getError();
-	}
-
-	/**
-	 * Multiplies the current matrix by an orthographic projection matrix.
-	 * @param left the left clipping plane on the X-Axis.
-	 * @param right the right clipping plane on the X-Axis.
-	 * @param bottom the bottom clipping plane on the Y-Axis.
-	 * @param top the upper clipping plane on the Y-Axis.
-	 * @param near the near clipping plane on the Z-Axis.
-	 * @param far the far clipping plane on the Z-Axis.
-	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
-	 */
-	public void matrixOrtho(float left, float right, float bottom, float top, float near, float far)
-	{
-		gl.glOrtho(left, right, bottom, top, near, far);
-		getError();
-	}
-
-	/**
-	 * Multiplies the current matrix by an aspect-adjusted orthographic projection matrix using the canvas dimensions.
-	 * @param targetAspect the target orthographic 
-	 * @param left the left clipping plane on the X-Axis.
-	 * @param right the right clipping plane on the X-Axis.
-	 * @param bottom the bottom clipping plane on the Y-Axis.
-	 * @param top the upper clipping plane on the Y-Axis.
-	 * @param near the near clipping plane on the Z-Axis.
-	 * @param far the far clipping plane on the Z-Axis.
-	 * @throws GraphicsException if <code>left == right || bottom == top || near == far</code>.
-	 */
-	public void matrixAspectOrtho(float targetAspect, float left, float right, float bottom, float top, float near, float far)
-	{
-		float viewWidth = Math.max(left, right) - Math.min(left, right);
-		float viewHeight = Math.max(bottom, top) - Math.min(bottom, top);
-		float viewAspect = viewWidth / viewHeight;
-        
-        if (targetAspect >= viewAspect)
-        {
-            float axis = targetAspect * viewHeight;
-            float widthDiff = (axis - viewWidth) / 2f;
-            right = left + viewWidth + widthDiff;
-            left = left - widthDiff;
-        }
-        else
-        {
-            float axis = (1.0f / targetAspect) * viewWidth;
-            float heightDiff = (axis - viewHeight) / 2f;
-            top = bottom + viewHeight + heightDiff;
-        	bottom = bottom - heightDiff;
-        }
-		
-        matrixOrtho(left, right, bottom, top, near, far);	
-	}
-
-	/**
-	 * Multiplies a "look at" matrix to the current matrix.
-	 * This sets up the matrix to look at a place in the world (if modelview).
-	 * @param eyeX the point to look at, X-coordinate.
-	 * @param eyeY the point to look at, Y-coordinate.
-	 * @param eyeZ the point to look at, Z-coordinate.
-	 * @param centerX the reference point to look from, X-coordinate.
-	 * @param centerY the reference point to look from, Y-coordinate.
-	 * @param centerZ the reference point to look from, Z-coordinate.
-	 * @param upX the up vector of the viewpoint, X-coordinate.
-	 * @param upY the up vector of the viewpoint, Y-coordinate.
-	 * @param upZ the up vector of the viewpoint, Z-coordinate.
-	 */
-	public void matrixLookAt(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ)
-	{
-		glu.gluLookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-		getError();
-	}
-	
-	/**
-	 * Pushes a series of attributes onto the attribute stack.
-	 * @param attribs the list of attributes to preserve.
-	 */
-	public void attribPush(AttribType ... attribs)
-	{
-		attribPush(attribs);
-	}
-
-	/**
-	 * Pushes an array of attributes onto the attribute stack.
-	 * This forgoes a potential memory allocation using the vararg method, {@link #attribPush(AttribType...)}.
-	 * @param attribs the list of attributes to preserve.
-	 */
-	public void attribPushArray(AttribType[] attribs)
-	{
-		int bits = 0;
-		for (AttribType at : attribs)
-			bits |= at.glValue;
-		gl.glPushAttrib(bits);
-	}
-
-	/**
-	 * Restores attributes from the attribute stack.
-	 */
-	public void attribPop()
-	{
-		gl.glPopAttrib();
-	}
-
-	/**
-	 * Pushes a series of attributes onto the attribute stack.
-	 * @param attribs the list of attributes to preserve.
-	 */
-	public void clientAttribPush(ClientAttribType ... attribs)
-	{
-		int bits = 0;
-		for (ClientAttribType cat : attribs)
-			bits |= cat.glValue;
-		gl.glPushClientAttrib(bits);
-	}
-
-	/**
-	 * Restores attributes from the attribute stack.
-	 */
-	public void clientAttribPop()
-	{
-		gl.glPopClientAttrib();
-	}
-
-	/**
-	 * Sets the current color used for drawing polygons and other geometry.
-	 * @param c the color to use.
-	 */
-	public void setColor(OGLColor c)
-	{
-		setColor(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
-	}
-
-	/**
-	 * Sets the current color used for drawing polygons and other geometry.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 */
-	public void setColor(float red, float green, float blue, float alpha)
-	{
-		gl.glColor4f(red, green, blue, alpha);
-	}
-
-	/**
-	 * Sets the current color used for drawing polygons and other geometry using
-	 * an ARGB integer.
-	 * @param argb the 32-bit color as an integer.
-	 */
-	public void setColorARGB(int argb)
-	{
-		gl.glColor4ub(
-			(byte)((argb >>> 16) & 0x0ff),
-			(byte)((argb >>> 8) & 0x0ff),
-			(byte)(argb & 0x0ff),
-			(byte)((argb >>> 24) & 0x0ff)
-		);
-	}
-
-	/**
-	 * Sets if lighting is enabled.
-	 */
-	public void setLightingEnabled(boolean flag)
-	{
-		glFlagSet(GL2.GL_LIGHTING, flag);
-	}
-
-	/**
-	 * Sets if certain lights are enabled.
-	 */
-	public void setLightEnabled(int sourceId, boolean flag)
-	{
-		glFlagSet(GL2.GL_LIGHT0 + sourceId, flag);
-	}
-
-	/**
-	 * Sets the current light used for illuminating polygons and other geometry.
-	 * This light will set all properties.
-	 * @param sourceId the light source id. this cannot exceed the maximum number of lights
-	 * that OpenGL can handle.
-	 * @param light the Light to use.
-	 */
-	public void setLight(int sourceId, OGLLight light)
-	{
-		if (sourceId < 0 || sourceId >= maxLights)
-			throw new GraphicsException("Not a valid light id.");
-		
-		setLightPosition(sourceId, light.getXPosition(), light.getYPosition(), light.getZPosition(), light.getWPosition());
-		setLightAmbientColor(sourceId, light.getAmbientColor());
-		setLightDiffuseColor(sourceId, light.getDiffuseColor());
-		setLightSpecularColor(sourceId, light.getSpecularColor());
-		setLightAttenuation(sourceId, light.getConstantAttenuation(), light.getLinearAttenuation(), light.getQuadraticAttenuation());
-	}
-
-	/**
-	 * Sets the current light attenuation used for illuminating polygons and other geometry.
-	 * This alters light intensity at varying distances from the light.
-	 * @param sourceId the light source id. this cannot exceed the maximum number of lights
-	 * that OpenGL can handle.
-	 * @param constant the constant coefficient.
-	 * @param linear the linear coefficient.
-	 * @param quadratic the quadratic coefficient.
-	 */
-	public void setLightAttenuation(int sourceId, float constant, float linear, float quadratic)
-	{
-		if (sourceId < 0 || sourceId >= maxLights)
-			throw new GraphicsException("Not a valid light id.");
-		
-		gl.glLightf(GL2.GL_LIGHT0 + sourceId, GL2.GL_CONSTANT_ATTENUATION, constant);
-		gl.glLightf(GL2.GL_LIGHT0 + sourceId, GL2.GL_LINEAR_ATTENUATION, linear);
-		gl.glLightf(GL2.GL_LIGHT0 + sourceId, GL2.GL_QUADRATIC_ATTENUATION, quadratic);
-	}
-
-	/**
-	 * Sets the color for a ambient component for a light. 
-	 * @param sourceId the light source id.
-	 * @param color the color to use.
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightAmbientColor(int sourceId, OGLColor color)
-	{
-		setLightAmbientColor(sourceId, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	/**
-	 * Sets the color for a ambient component for a light. 
-	 * @param sourceId the light source id.
-	 * @param argbColor the ARGB color to set.
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightAmbientColor(int sourceId, int argbColor)
-	{
-		setLightAmbientColor(sourceId, 			
-			((0x00ff0000 & argbColor) >>> 16) / 255f,
-			((0x0000ff00 & argbColor) >>> 8) / 255f,
-			(0x000000ff & argbColor) / 255f,
-			((0xff000000 & argbColor) >>> 24) / 255f
-		);
-	}
-
-	/**
-	 * Sets the color for a ambient component for a light. 
-	 * @param sourceId the light source id.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightAmbientColor(int sourceId, float red, float green, float blue, float alpha)
-	{
-		if (sourceId < 0 || sourceId >= maxLights)
-			throw new GraphicsException("Not a valid light id.");
-		FLOAT_STATE[0] = red;
-		FLOAT_STATE[1] = green;
-		FLOAT_STATE[2] = blue;
-		FLOAT_STATE[3] = alpha;
-		gl.glLightfv(GL2.GL_LIGHT0 + sourceId, GL2.GL_AMBIENT, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the color for a diffuse component for a light. 
-	 * @param sourceId the light source id.
-	 * @param color the color to use.
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightDiffuseColor(int sourceId, OGLColor color)
-	{
-		setLightDiffuseColor(sourceId, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	/**
-	 * Sets the color for a diffuse component for a light. 
-	 * @param sourceId the light source id.
-	 * @param argbColor the ARGB color to set.
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightDiffuseColor(int sourceId, int argbColor)
-	{
-		setLightDiffuseColor(sourceId, 			
-			((0x00ff0000 & argbColor) >>> 16) / 255f,
-			((0x0000ff00 & argbColor) >>> 8) / 255f,
-			(0x000000ff & argbColor) / 255f,
-			((0xff000000 & argbColor) >>> 24) / 255f
-		);
-	}
-
-	/**
-	 * Sets the color for a diffuse component for a light. 
-	 * @param sourceId the light source id.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightDiffuseColor(int sourceId, float red, float green, float blue, float alpha)
-	{
-		if (sourceId < 0 || sourceId >= maxLights)
-			throw new GraphicsException("Not a valid light id.");
-		FLOAT_STATE[0] = red;
-		FLOAT_STATE[1] = green;
-		FLOAT_STATE[2] = blue;
-		FLOAT_STATE[3] = alpha;
-		gl.glLightfv(GL2.GL_LIGHT0 + sourceId, GL2.GL_DIFFUSE, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the color for a specular component for a light. 
-	 * @param sourceId the light source id.
-	 * @param color the color to use.
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightSpecularColor(int sourceId, OGLColor color)
-	{
-		setLightSpecularColor(sourceId, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	/**
-	 * Sets the color for a specular component for a light. 
-	 * @param sourceId the light source id.
-	 * @param argbColor the ARGB color to set.
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightSpecularColor(int sourceId, int argbColor)
-	{
-		setLightSpecularColor(sourceId, 			
-			((0x00ff0000 & argbColor) >>> 16) / 255f,
-			((0x0000ff00 & argbColor) >>> 8) / 255f,
-			(0x000000ff & argbColor) / 255f,
-			((0xff000000 & argbColor) >>> 24) / 255f
-		);
-	}
-
-	/**
-	 * Sets the color for a specular component for a light. 
-	 * @param sourceId the light source id.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightSpecularColor(int sourceId, float red, float green, float blue, float alpha)
-	{
-		if (sourceId < 0 || sourceId >= maxLights)
-			throw new GraphicsException("Not a valid light id.");
-		FLOAT_STATE[0] = red;
-		FLOAT_STATE[1] = green;
-		FLOAT_STATE[2] = blue;
-		FLOAT_STATE[3] = alpha;
-		gl.glLightfv(GL2.GL_LIGHT0 + sourceId, GL2.GL_SPECULAR, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the position of a light source. 
-	 * @param sourceId the light source id.
-	 * @param x the x-axis position.
-	 * @param y the y-axis position.
-	 * @param z the z-axis position.
-	 * @param w if 0, the light is a directional one. If nonzero, positional.
-	 * @throws GraphicsException if the specified sourceId is not a valid one.
-	 * @see OGLGraphics#getMaxLights()
-	 */
-	public void setLightPosition(int sourceId, float x, float y, float z, float w)
-	{
-		if (sourceId < 0 || sourceId >= maxLights)
-			throw new GraphicsException("Not a valid light id.");
-		FLOAT_STATE[0] = x;
-		FLOAT_STATE[1] = y;
-		FLOAT_STATE[2] = z;
-		FLOAT_STATE[3] = w;
-		gl.glLightfv(GL2.GL_LIGHT0 + sourceId, GL2.GL_POSITION, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the current material used for drawing polygons and other geometry.
-	 * Depending on what colors are set on the Material object, not all of the
-	 * material calls will be made. This applies the Material properties to both
-	 * polygon sides, and will remain doing so until this is changed.
-	 * @param material the material to use.
-	 */
-	public void setMaterial(OGLMaterial material)
-	{
-		setMaterial(FaceSide.FRONT_AND_BACK, material);
-	}
-
-	/**
-	 * Sets the current material used for drawing polygons and other geometry,
-	 * and will remain doing so until this is changed.
-	 * Depending on what colors are set on the Material object, not all of the
-	 * material calls will be made. 
-	 * @param faceside the face side to apply these properties to.
-	 * @param material the material to use.
-	 */
-	public void setMaterial(FaceSide faceside, OGLMaterial material)
-	{
-		if (material.getAmbientColor() != null)
-			setMaterialAmbientColor(faceside, material.getAmbientColor());
-		if (material.getDiffuseColor() != null)
-			setMaterialDiffuseColor(faceside, material.getDiffuseColor());
-		if (material.getSpecularColor() != null)
-			setMaterialSpecularColor(faceside, material.getSpecularColor());
-		if (material.getEmissionColor() != null)
-			setMaterialEmissionColor(faceside, material.getEmissionColor());
-		setMaterialShininessFactor(faceside, material.getShininess());
-	}
-
-	/**
-	 * Sets the current material ambient color used for drawing polygons and other geometry.
-	 * @param faceside the face side to apply these properties to.
-	 * @param color the color to use.
-	 */
-	public void setMaterialAmbientColor(FaceSide faceside, OGLColor color)
-	{
-		setMaterialAmbientColor(faceside, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	/**
-	 * Sets the current material ambient color used for drawing polygons and other geometry.
-	 * @param faceside the face side to apply these properties to.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 */
-	public void setMaterialAmbientColor(FaceSide faceside, float red, float green, float blue, float alpha)
-	{
-		FLOAT_STATE[0] = red;
-		FLOAT_STATE[1] = green;
-		FLOAT_STATE[2] = blue;
-		FLOAT_STATE[3] = alpha;
-		gl.glMaterialfv(faceside.glValue, GL2.GL_AMBIENT, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the current material diffuse color used for drawing polygons and other geometry.
-	 * @param faceside the face side to apply these properties to.
-	 * @param color the color to use.
-	 */
-	public void setMaterialDiffuseColor(FaceSide faceside, OGLColor color)
-	{
-		setMaterialDiffuseColor(faceside, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	/**
-	 * Sets the current material diffuse color used for drawing polygons and other geometry.
-	 * @param faceside the face side to apply these properties to.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 */
-	public void setMaterialDiffuseColor(FaceSide faceside, float red, float green, float blue, float alpha)
-	{
-		FLOAT_STATE[0] = red;
-		FLOAT_STATE[1] = green;
-		FLOAT_STATE[2] = blue;
-		FLOAT_STATE[3] = alpha;
-		gl.glMaterialfv(faceside.glValue, GL2.GL_DIFFUSE, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the current material specular color used for drawing polygons and other geometry.
-	 * @param faceside the face side to apply these properties to.
-	 * @param color	the color to use.
-	 */
-	public void setMaterialSpecularColor(FaceSide faceside, OGLColor color)
-	{
-		setMaterialSpecularColor(faceside, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	/**
-	 * Sets the current material specular color used for drawing polygons and other geometry.
-	 * @param faceside the face side to apply these properties to.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 */
-	public void setMaterialSpecularColor(FaceSide faceside, float red, float green, float blue, float alpha)
-	{
-		FLOAT_STATE[0] = red;
-		FLOAT_STATE[1] = green;
-		FLOAT_STATE[2] = blue;
-		FLOAT_STATE[3] = alpha;
-		gl.glMaterialfv(faceside.glValue, GL2.GL_SPECULAR, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the current material emission color used for drawing polygons and other geometry.
-	 * @param faceside	the face side to apply these properties to.
-	 * @param color			the color to use.
-	 */
-	public void setMaterialEmissionColor(FaceSide faceside, OGLColor color)
-	{
-		color.getRGBA(FLOAT_STATE);
-		gl.glMaterialfv(faceside.glValue, GL2.GL_EMISSION, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the current material emission color used for drawing polygons and other geometry.
-	 * @param faceside	the face side to apply these properties to.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 */
-	public void setMaterialEmissionColor(FaceSide faceside, float red, float green, float blue, float alpha)
-	{
-		FLOAT_STATE[0] = red;
-		FLOAT_STATE[1] = green;
-		FLOAT_STATE[2] = blue;
-		FLOAT_STATE[3] = alpha;
-		gl.glMaterialfv(faceside.glValue, GL2.GL_EMISSION, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the current material shininess factor used for drawing polygons and other geometry.
-	 * As this number gets higher,
-	 * @param faceside the face side to apply these properties to.
-	 * @param f the factor.
-	 */
-	public void setMaterialShininessFactor(FaceSide faceside, float f)
-	{
-		gl.glMaterialf(faceside.glValue, GL2.GL_SHININESS, f);		
-	}
-
-	/**
-	 * Sets if fog rendering is enabled or disabled. 
-	 */
-	public void setFogEnabled(boolean flag)
-	{
-		glFlagSet(GL2.GL_FOG, flag);
-	}
-	
-	/**
-	 * Sets the origin of the calculation of the fog coordinate value that
-	 * dictates "where" in the fog it is.
-	 * @param coord the coordinate type.
-	 */
-	public void setFogCoordinateSource(FogCoordinateType coord)
-	{
-		gl.glFogi(GL2.GL_FOG_COORD_SRC, coord.glValue);
-	}
-
-	/**
-	 * Sets most fog attributes at once for linear fog.
-	 * @param color the color of the fog.
-	 * @param start the unit of space for the fog start (before that is no fog).
-	 * @param end the unit of space for the fog end (after that is solid color).
-	 * @see OGLGraphics#setFogColor(OGLColor)
-	 * @see OGLGraphics#setFogFormula(FogFormulaType)
-	 * @see OGLGraphics#setFogStart(float)
-	 * @see OGLGraphics#setFogEnd(float)
-	 */
-	public void setFogLinear(OGLColor color, float start, float end)
-	{
-		setFogFormula(FogFormulaType.LINEAR);
-		setFogColor(color);
-		setFogStart(start);
-		setFogEnd(end);
-	}
-	
-	/**
-	 * Sets most fog attributes at once for exponent fog.
-	 * @param color the color of the fog.
-	 * @param density the density factor to use.
-	 * @see OGLGraphics#setFogColor(OGLColor)
-	 * @see OGLGraphics#setFogFormula(FogFormulaType)
-	 * @see OGLGraphics#setFogDensity(float)
-	 */
-	public void setFogExponent(OGLColor color, float density)
-	{
-		setFogFormula(FogFormulaType.EXPONENT);
-		setFogColor(color);
-		setFogDensity(density);
-	}
-	
-	/**
-	 * Sets most fog attributes at once for exponent squared fog.
-	 * @param color the color of the fog.
-	 * @param density the density factor to use.
-	 * @see OGLGraphics#setFogColor(OGLColor)
-	 * @see OGLGraphics#setFogFormula(FogFormulaType)
-	 * @see OGLGraphics#setFogDensity(float)
-	 */
-	public void setFogExponentSquared(OGLColor color, float density)
-	{
-		setFogFormula(FogFormulaType.EXPONENT_SQUARED);
-		setFogColor(color);
-		setFogDensity(density);
-	}
-	
-	/**
-	 * Sets the color of the fog.
-	 * @param color the color of the fog.
-	 */
-	public void setFogColor(OGLColor color)
-	{
-		setFogColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-	}
-
-	/**
-	 * Sets the color of the fog.
-	 * @param red the red component of the color to use (0 to 1).
-	 * @param green the green component of the color to use (0 to 1).
-	 * @param blue the blue component of the color to use (0 to 1).
-	 * @param alpha the alpha component of the color to use (0 to 1).
-	 */
-	public void setFogColor(float red, float green, float blue, float alpha)
-	{
-		FLOAT_STATE[0] = red;
-		FLOAT_STATE[1] = green;
-		FLOAT_STATE[2] = blue;
-		FLOAT_STATE[3] = alpha;
-		gl.glFogfv(GL2.GL_FOG_COLOR, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the current color used for fog as an ARGB integer.
-	 * @param argb the 32-bit color as an integer.
-	 */
-	public void setFogColor(int argb)
-	{
-		float a = ((argb & 0xFF000000) >>> 24) / 255f; 
-		float r = ((argb & 0x00FF0000) >>> 16) / 255f; 
-		float g = ((argb & 0x0000FF00) >>> 8) / 255f; 
-		float b = (argb & 0x000000FF) / 255f;
-		setFogColor(r, g, b, a);
-	}
-
-	/**
-	 * Sets the distance calculation formula for calculating fog cover. 
-	 * @param formula the formula to use.
-	 */
-	public void setFogFormula(FogFormulaType formula)
-	{
-		gl.glFogi(GL2.GL_FOG_MODE, formula.glValue);
-	}
-	
-	/**
-	 * Sets the density factor for calculating fog.
-	 * Only works for the exponential formulas.
-	 * @param density the density factor to use.
-	 */
-	public void setFogDensity(float density)
-	{
-		gl.glFogf(GL2.GL_FOG_DENSITY, density);
-	}
-	
-	/**
-	 * Sets the starting point for calculating fog.
-	 * The value passed in is from the eye.
-	 * @param start the unit of space for the fog start (before that is no fog).
-	 */
-	public void setFogStart(float start)
-	{
-		gl.glFogf(GL2.GL_FOG_START, start);
-	}
-	
-	/**
-	 * Sets the starting point for calculating fog.
-	 * The value passed in is from the eye.
-	 * @param end the unit of space for the fog end (after that is solid color).
-	 */
-	public void setFogEnd(float end)
-	{
-		gl.glFogf(GL2.GL_FOG_END, end);
-	}
-	
-	/**
 	 * Sets if each color component gets written to the color buffer.
 	 * @param red	will the red component be written to the buffer?
 	 * @param green	will the green component be written to the buffer?
@@ -1815,17 +909,7 @@ public class OGLGraphics
 	 */
 	public void setPointSmoothingEnabled(boolean enabled)
 	{
-		glFlagSet(GL2.GL_POINT_SMOOTH, enabled);
-	}
-
-	/**
-	 * Enables/Disables point sprite conversion.
-	 * Internally, OpenGL will convert point geometry into billboarded quads or
-	 * actual polygonal information internally. 
-	 */
-	public void setPointSpritesEnabled(boolean enabled)
-	{
-		glFlagSet(GL2.GL_POINT_SPRITE, enabled);
+		glFlagSet(GL3.GL_POINT_SMOOTH, enabled);
 	}
 
 	/**
@@ -1834,7 +918,7 @@ public class OGLGraphics
 	 */
 	public void setLineSmoothingEnabled(boolean enabled)
 	{
-		glFlagSet(GL2.GL_LINE_SMOOTH, enabled);
+		glFlagSet(GL3.GL_LINE_SMOOTH, enabled);
 	}
 
 	/**
@@ -1847,10 +931,9 @@ public class OGLGraphics
 	public void clearFrameBuffers(boolean color, boolean depth, boolean accum, boolean stencil)
 	{
 		gl.glClear(
-			(color? GL2.GL_COLOR_BUFFER_BIT : 0) | 
-			(accum? GL2.GL_ACCUM_BUFFER_BIT : 0) | 
-			(depth? GL2.GL_DEPTH_BUFFER_BIT : 0) | 
-			(stencil? GL2.GL_STENCIL_BUFFER_BIT : 0)
+			(color? GL3.GL_COLOR_BUFFER_BIT : 0) | 
+			(depth? GL3.GL_DEPTH_BUFFER_BIT : 0) | 
+			(stencil? GL3.GL_STENCIL_BUFFER_BIT : 0)
 		);
 	}
 
@@ -1862,8 +945,8 @@ public class OGLGraphics
 	 */
 	public void setFrameBufferRead(FrameBufferType b)
 	{
-		if (b == FrameBufferType.FRONT_AND_BACK || b == FrameBufferType.NONE)
-			throw new IllegalArgumentException("The read buffer can't be NONE nor FRONT AND BACK");
+		if (b == FrameBufferType.NONE)
+			throw new IllegalArgumentException("The read buffer can't be NONE");
 		gl.glReadBuffer(b.glValue);
 	}
 
@@ -1875,8 +958,8 @@ public class OGLGraphics
 	 */
 	public void setFrameBufferWrite(FrameBufferType b)
 	{
-		if (b == FrameBufferType.FRONT_AND_BACK || b == FrameBufferType.NONE)
-			throw new IllegalArgumentException("The read buffer can't be NONE nor FRONT AND BACK");
+		if (b == FrameBufferType.NONE)
+			throw new IllegalArgumentException("The read buffer can't be NONE");
 		gl.glDrawBuffer(b.glValue);
 	}
 
@@ -1894,7 +977,7 @@ public class OGLGraphics
 		if (!imageData.isDirect())
 			throw new GraphicsException("Data must be a direct buffer.");
 		
-		gl.glReadPixels(x, y, width, height, GL2.GL_BGRA, GL2.GL_UNSIGNED_BYTE, imageData);
+		gl.glReadPixels(x, y, width, height, GL3.GL_BGRA, GL3.GL_UNSIGNED_BYTE, imageData);
 	}
 
 	/**
@@ -1945,7 +1028,7 @@ public class OGLGraphics
 	 */
 	public void setDepthTestEnabled(boolean flag)
 	{
-		glFlagSet(GL2.GL_DEPTH_TEST,flag);
+		glFlagSet(GL3.GL_DEPTH_TEST,flag);
 	}
 
 	/**
@@ -1984,7 +1067,7 @@ public class OGLGraphics
 	 */
 	public void setStencilTestEnabled(boolean flag)
 	{
-		glFlagSet(GL2.GL_STENCIL_TEST,flag);
+		glFlagSet(GL3.GL_STENCIL_TEST,flag);
 	}
 
 	/**
@@ -2014,7 +1097,7 @@ public class OGLGraphics
 	 */
 	public void setScissorTestEnabled(boolean flag)
 	{
-		glFlagSet(GL2.GL_SCISSOR_TEST,flag);
+		glFlagSet(GL3.GL_SCISSOR_TEST,flag);
 	}
 
 	/**
@@ -2034,7 +1117,7 @@ public class OGLGraphics
 	 */
 	public void setBlendingEnabled(boolean flag)
 	{
-		glFlagSet(GL2.GL_BLEND,flag);
+		glFlagSet(GL3.GL_BLEND,flag);
 	}
 
 	/**
@@ -2061,7 +1144,7 @@ public class OGLGraphics
 	 */
 	public void setFaceCullingEnabled(boolean flag)
 	{
-		glFlagSet(GL2.GL_CULL_FACE,flag);
+		glFlagSet(GL3.GL_CULL_FACE,flag);
 	}
 
 	/**
@@ -2070,18 +1153,6 @@ public class OGLGraphics
 	public void setFaceCullingSide(FaceSide side)
 	{
 		gl.glCullFace(side.glValue);
-	}
-
-	/**
-	 * Sets the next raster position for drawing bitmaps.
-	 * Remember, (0,0) is the lower left edge of the window.
-	 * @param x	the screen x-coordinate.
-	 * @param y	the screen y-coordinate.
-	 * @param z	the screen z-coordinate.
-	 */
-	public void setRasterPosition(int x, int y, float z)
-	{
-		gl.glRasterPos3f(x, y, z);
 	}
 
 	/**
@@ -2103,73 +1174,11 @@ public class OGLGraphics
 	}
 	
 	/**
-	 * Prints a message to the screen in the style of C's printf using
-	 * the GLUTFont.BITMAP_8_BY_13 font.
-	 * Remember to set color, and raster position before executing this method.
-	 * This will change light enabling and some client array states.
-	 * @param formatString the printf-formatted string to print.
-	 * @param args printf arguments.
-	 */
-	public void printf(String formatString, Object ... args)
-	{
-		printf(GLUTFont.BITMAP_8_BY_13, formatString, args);
-	}
-
-	/**
-	 * Prints a message to the screen in the style of C's printf.
-	 * Remember to set color, then raster position before executing this method.
-	 * This will change light enabling and some client array states.
-	 * @param font the GLUTFont to use for printing this string.
-	 * @param formatString the printf-formatted string to print (see {@link String#format(String, Object...)}).
-	 * @param args printf arguments.
-	 */
-	public void printf(GLUTFont font, String formatString, Object ... args)
-	{
-		print(font, String.format(formatString, args));
-	}
-
-	/**
-	 * Prints a message to the screen using the GLUTFont.BITMAP_8_BY_13 font.
-	 * Remember to set color, and raster position before executing this method.
-	 * This will change light enabling and some client array states.
-	 * @param message the message string to print.
-	 */
-	public void print(String message)
-	{
-		print(GLUTFont.BITMAP_8_BY_13, message);
-	}
-
-	/**
-	 * Prints a message to the screen.
-	 * Remember to set color, and raster position before executing this method.
-	 * This will change light enabling and some client array states.
-	 * @param font the GLUTFont to use for printing this string.
-	 * @param message the message string to print.
-	 */
-	public void print(GLUTFont font, String message)
-	{
-		glut.glutBitmapString(font.glutValue, message);
-	}
-
-	/**
-	 * Draws a Bitmap at the current raster position and increments the raster position.
-	 * @param b			the Bitmap to draw ((0,0) is the lower-left).
-	 * @param offsetX	the offset from the current raster position, x-coordinate.
-	 * @param offsetY	the offset from the current raster position, y-coordinate.
-	 * @param incX		what to increment the raster position x-coordinate by after the draw.
-	 * @param incY  	what to increment the raster position y-coordinate by after the draw.
-	 */
-	public void drawBitmap(OGLBitmap b, float offsetX, float offsetY, float incX, float incY)
-	{
-		gl.glBitmap(b.getWidth(), b.getHeight(), offsetX, offsetY, incX, incY, b.getBytes(), 0);
-	}
-
-	/**
 	 * Sets if 1D texturing is enabled or not.
 	 */
 	public void setTexture1DEnabled(boolean flag)
 	{
-		glFlagSet(GL2.GL_TEXTURE_1D,flag);
+		glFlagSet(GL3.GL_TEXTURE_1D,flag);
 	}
 
 	/**
@@ -2177,7 +1186,7 @@ public class OGLGraphics
 	 */
 	public void setTexture2DEnabled(boolean flag)
 	{
-		glFlagSet(GL2.GL_TEXTURE_2D,flag);
+		glFlagSet(GL3.GL_TEXTURE_2D,flag);
 	}
 
 	/**
@@ -2185,124 +1194,7 @@ public class OGLGraphics
 	 */
 	public void setTextureCubeEnabled(boolean flag)
 	{
-		glFlagSet(GL2.GL_TEXTURE_CUBE_MAP,flag);
-	}
-
-	/**
-	 * Sets the Level Of Detail bias for automatic texture mipmapping.
-	 * @param bias	the bias value.
-	 */
-	public void setTextureLODBias(float bias)
-	{
-		gl.glTexEnvf(GL2.GL_TEXTURE_FILTER_CONTROL, GL2.GL_TEXTURE_LOD_BIAS, bias);
-	}
-
-	/**
-	 * Sets the texture environment mode to use for texel fragment coloring.
-	 * This is usually REPLACE, by default.
-	 * @param mode	the texture mode.
-	 */
-	public void setTextureEnvironment(TextureMode mode)
-	{
-		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, mode.glValue);
-	}
-
-	/**
-	 * Sets if texture coordinates are to be generated across point geometry
-	 * dimensions. Useful for Point Sprites, obviously.
-	 */
-	public void setPointSpriteTexCoordGeneration(boolean val)
-	{
-		gl.glTexEnvi(GL2.GL_POINT_SPRITE, GL2.GL_COORD_REPLACE, toGLBool(val));
-	}
-
-	/**
-	 * Sets if texture coordinates are to be automatically generated
-	 * for the S coordinate axis (usually width).
-	 */
-	public void setTexGenSEnabled(boolean flag)
-	{
-		glFlagSet(GL2.GL_TEXTURE_GEN_S,flag);
-	}
-
-	/**
-	 * Sets if texture coordinates are to be automatically generated
-	 * for the T coordinate axis (usually height).
-	 */
-	public void setTexGenTEnabled(boolean flag)
-	{
-		glFlagSet(GL2.GL_TEXTURE_GEN_T,flag);
-	}
-
-	/**
-	 * Sets if texture coordinates are to be automatically generated
-	 * for the R coordinate axis (usually depth).
-	 */
-	public void setTexGenREnabled(boolean flag)
-	{
-		glFlagSet(GL2.GL_TEXTURE_GEN_R,flag);
-	}
-
-	/**
-	 * Sets if texture coordinates are to be automatically generated
-	 * for the Q coordinate axis (I have no idea what the hell this could be).
-	 */
-	public void setTexGenQEnabled(boolean flag)
-	{
-		glFlagSet(GL2.GL_TEXTURE_GEN_Q,flag);
-	}
-
-	/**
-	 * Sets how texture coordinates are to be automatically generated.
-	 * @param coord		the texture coordinate to set the mode for.
-	 * @param mode		the generation function.
-	 */
-	public void setTexGenMode(TextureCoordType coord, TextureGenMode mode)
-	{
-		gl.glTexGeni(coord.glValue, GL2.GL_TEXTURE_GEN_MODE, mode.glValue);
-	}
-
-	/**
-	 * Sets the eye plane equation for generating coordinates using the eye method.
-	 * @param coord	the texture coordinate to set the mode for.
-	 * @param a		the plane A coordinate coefficient.
-	 * @param b		the plane B coordinate coefficient.
-	 * @param c		the plane C coordinate coefficient.
-	 * @param d		the plane D coordinate coefficient.
-	 */
-	public void setTexGenEyePlane(TextureCoordType coord, float a, float b, float c, float d)
-	{
-		FLOAT_STATE[0] = a;
-		FLOAT_STATE[1] = b;
-		FLOAT_STATE[2] = c;
-		FLOAT_STATE[3] = d;
-		gl.glTexGenfv(coord.glValue, GL2.GL_EYE_PLANE, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets the object plane equation for generating coordinates using the object method.
-	 * @param coord	the texture coordinate to set the mode for.
-	 * @param a		the plane A coordinate coefficient.
-	 * @param b		the plane B coordinate coefficient.
-	 * @param c		the plane C coordinate coefficient.
-	 * @param d		the plane D coordinate coefficient.
-	 */
-	public void setTexGenObjectPlane(TextureCoordType coord, float a, float b, float c, float d)
-	{
-		FLOAT_STATE[0] = a;
-		FLOAT_STATE[1] = b;
-		FLOAT_STATE[2] = c;
-		FLOAT_STATE[3] = d;
-		gl.glTexGenfv(coord.glValue, GL2.GL_OBJECT_PLANE, FLOAT_STATE, 0);
-	}
-
-	/**
-	 * Sets if normal vectors are generated automatically when geometry is submitted to
-	 * the OpenGL geometry pipeline.
-	 */
-	public void setAutoNormalGen(boolean flag)
-	{
-		glFlagSet(GL2.GL_AUTO_NORMAL, flag);
+		glFlagSet(GL3.GL_TEXTURE_CUBE_MAP,flag);
 	}
 
 	/**
@@ -2313,7 +1205,7 @@ public class OGLGraphics
 	{
 		if (unit < 0 || unit >= maxTextureUnits)
 			throw new GraphicsException("Illegal texture unit. Must be from 0 to "+(maxTextureUnits-1)+".");
-		gl.glActiveTexture(GL2.GL_TEXTURE0 + unit);
+		gl.glActiveTexture(GL3.GL_TEXTURE0 + unit);
 	}
 	
 	/**
@@ -2335,7 +1227,7 @@ public class OGLGraphics
 		if (texture == null)
 			unsetTexture1D();
 		else
-			gl.glBindTexture(GL2.GL_TEXTURE_1D, texture.getGLId());
+			gl.glBindTexture(GL3.GL_TEXTURE_1D, texture.getGLId());
 	}
 	
 	/**
@@ -2343,15 +1235,13 @@ public class OGLGraphics
 	 * @param minFilter the minification filter.
 	 * @param magFilter the magnification filter.
 	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
-	 * @param genMipmaps if this generates mipmaps automatically.
 	 */
-	public void setTextureFiltering1D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean genMipmaps)
+	public void setTextureFiltering1D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy)
 	{
 		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
-    	gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MAG_FILTER, magFilter.glid);
-		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MIN_FILTER, minFilter.glid);
-		gl.glTexParameterf(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-    	gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_GENERATE_MIPMAP, genMipmaps ? GL2.GL_TRUE : GL2.GL_FALSE);
+    	gl.glTexParameteri(GL3.GL_TEXTURE_1D, GL3.GL_TEXTURE_MAG_FILTER, magFilter.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_1D, GL3.GL_TEXTURE_MIN_FILTER, minFilter.glid);
+		gl.glTexParameterf(GL3.GL_TEXTURE_1D, GL3.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
 	}
 	
 	/**
@@ -2360,7 +1250,7 @@ public class OGLGraphics
 	 */
 	public void setTextureWrapping1D(TextureWrapType wrapS)
 	{
-		gl.glTexParameteri(GL2.GL_TEXTURE_1D, GL2.GL_TEXTURE_WRAP_S, wrapS.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_1D, GL3.GL_TEXTURE_WRAP_S, wrapS.glid);
 	}
 
 	/**
@@ -2381,13 +1271,13 @@ public class OGLGraphics
 		
 		clearError();
 		gl.glTexImage1D(
-			GL2.GL_TEXTURE_1D,
+			GL3.GL_TEXTURE_1D,
 			0,
 			format.glid, 
 			width,
 			border,
-			GL2.GL_BGRA,
-			GL2.GL_UNSIGNED_BYTE,
+			GL3.GL_BGRA,
+			GL3.GL_UNSIGNED_BYTE,
 			imageData
 		);
 		getError();
@@ -2407,12 +1297,12 @@ public class OGLGraphics
 
 		clearError();
 		gl.glTexSubImage1D(
-			GL2.GL_TEXTURE_1D,
+			GL3.GL_TEXTURE_1D,
 			0,
 			xoffs,
 			width,
-			GL2.GL_BGRA,
-			GL2.GL_UNSIGNED_BYTE,
+			GL3.GL_BGRA,
+			GL3.GL_UNSIGNED_BYTE,
 			imageData
 		);
 		getError();
@@ -2423,7 +1313,7 @@ public class OGLGraphics
 	 */
 	public void unsetTexture1D()
 	{
-		gl.glBindTexture(GL2.GL_TEXTURE_1D, 0);
+		gl.glBindTexture(GL3.GL_TEXTURE_1D, 0);
 	}
 
 	/**
@@ -2435,7 +1325,7 @@ public class OGLGraphics
 		if (texture == null)
 			unsetTexture2D();
 		else
-			gl.glBindTexture(GL2.GL_TEXTURE_2D, texture.getGLId());
+			gl.glBindTexture(GL3.GL_TEXTURE_2D, texture.getGLId());
 	}
 
 	/**
@@ -2443,15 +1333,13 @@ public class OGLGraphics
 	 * @param minFilter the minification filter.
 	 * @param magFilter the magnification filter.
 	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
-	 * @param genMipmaps if this generates mipmaps automatically.
 	 */
-	public void setTextureFiltering2D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean genMipmaps)
+	public void setTextureFiltering2D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy)
 	{
 		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
-    	gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, magFilter.glid);
-		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, minFilter.glid);
-		gl.glTexParameterf(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-    	gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_GENERATE_MIPMAP, genMipmaps ? GL2.GL_TRUE : GL2.GL_FALSE);
+    	gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, magFilter.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, minFilter.glid);
+		gl.glTexParameterf(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
 	}
 	
 	/**
@@ -2461,8 +1349,8 @@ public class OGLGraphics
 	 */
 	public void setTextureWrapping2D(TextureWrapType wrapS, TextureWrapType wrapT)
 	{
-		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_S, wrapS.glid);
-		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_WRAP_T, wrapT.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, wrapS.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, wrapT.glid);
 	}
 	
 	/**
@@ -2484,14 +1372,14 @@ public class OGLGraphics
 		
 		clearError();
 		gl.glTexImage2D(
-			GL2.GL_TEXTURE_2D,
+			GL3.GL_TEXTURE_2D,
 			0,
 			format.glid, 
 			width,
 			height,
 			border,
-			GL2.GL_BGRA,
-			GL2.GL_UNSIGNED_BYTE,
+			GL3.GL_BGRA,
+			GL3.GL_UNSIGNED_BYTE,
 			imageData
 		);
 		getError();
@@ -2513,14 +1401,14 @@ public class OGLGraphics
 
 		clearError();
 		gl.glTexSubImage2D(
-			GL2.GL_TEXTURE_2D,
+			GL3.GL_TEXTURE_2D,
 			0,
 			xoffs,
 			yoffs,
 			width,
 			height,
-			GL2.GL_BGRA,
-			GL2.GL_UNSIGNED_BYTE,
+			GL3.GL_BGRA,
+			GL3.GL_UNSIGNED_BYTE,
 			imageData
 		);
 		getError();
@@ -2539,7 +1427,7 @@ public class OGLGraphics
 	 */
 	public void copyBufferToCurrentTexture2D(OGLTexture texture, int texlevel, int xoffset, int yoffset, int srcX, int srcY, int width, int height)
 	{
-		gl.glCopyTexSubImage2D(GL2.GL_TEXTURE_2D, texlevel, xoffset, yoffset, srcX, srcY, width, height);
+		gl.glCopyTexSubImage2D(GL3.GL_TEXTURE_2D, texlevel, xoffset, yoffset, srcX, srcY, width, height);
 	}
 
 	/**
@@ -2547,7 +1435,7 @@ public class OGLGraphics
 	 */
 	public void unsetTexture2D()
 	{
-		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
+		gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
 	}
 
 	/**
@@ -2559,7 +1447,7 @@ public class OGLGraphics
 		if (texture == null)
 			unsetTextureCube();
 		else
-			gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP, texture.getGLId());
+			gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, texture.getGLId());
 	}
 
 	/**
@@ -2567,15 +1455,13 @@ public class OGLGraphics
 	 * @param minFilter the minification filter.
 	 * @param magFilter the magnification filter.
 	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
-	 * @param genMipmaps if this generates mipmaps automatically.
 	 */
-	public void setTextureFilteringCube(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean genMipmaps)
+	public void setTextureFilteringCube(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy)
 	{
 		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
-    	gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAG_FILTER, magFilter.glid);
-		gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MIN_FILTER, minFilter.glid);
-		gl.glTexParameterf(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-    	gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_GENERATE_MIPMAP, genMipmaps ? GL2.GL_TRUE : GL2.GL_FALSE);
+    	gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_MAG_FILTER, magFilter.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_MIN_FILTER, minFilter.glid);
+		gl.glTexParameterf(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
 	}
 
 	/**
@@ -2586,9 +1472,9 @@ public class OGLGraphics
 	 */
 	public void setTextureWrappingCube(TextureWrapType wrapS, TextureWrapType wrapT, TextureWrapType wrapR)
 	{
-		gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_S, wrapS.glid);
-		gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_T, wrapT.glid);
-		gl.glTexParameteri(GL2.GL_TEXTURE_CUBE_MAP, GL2.GL_TEXTURE_WRAP_R, wrapR.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_WRAP_S, wrapS.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_WRAP_T, wrapT.glid);
+		gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_WRAP_R, wrapR.glid);
 	}
 	
 	/**
@@ -2617,8 +1503,8 @@ public class OGLGraphics
 			width,
 			height,
 			border,
-			GL2.GL_BGRA,
-			GL2.GL_UNSIGNED_BYTE,
+			GL3.GL_BGRA,
+			GL3.GL_UNSIGNED_BYTE,
 			imageData
 		);
 		getError();
@@ -2647,8 +1533,8 @@ public class OGLGraphics
 			yoffs,
 			width,
 			height,
-			GL2.GL_BGRA,
-			GL2.GL_UNSIGNED_BYTE,
+			GL3.GL_BGRA,
+			GL3.GL_UNSIGNED_BYTE,
 			imageData
 		);
 		getError();
@@ -2659,7 +1545,7 @@ public class OGLGraphics
 	 */
 	public void unsetTextureCube()
 	{
-		gl.glBindTexture(GL2.GL_TEXTURE_CUBE_MAP,0);
+		gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP,0);
 	}
 
 	/**
@@ -2901,7 +1787,7 @@ public class OGLGraphics
 		if (frameRenderBuffer == null)
 			unsetFrameRenderBuffer();
 		else
-			gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, frameRenderBuffer.getGLId());
+			gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, frameRenderBuffer.getGLId());
 	}
 
 	/**
@@ -2914,7 +1800,7 @@ public class OGLGraphics
 	{
 		if (width < 1 || height < 1)
 			throw new GraphicsException("Render buffer size cannot be less than 1 in any dimension.");
-		gl.glRenderbufferStorage(GL2.GL_RENDERBUFFER, format.glid, width, height);
+		gl.glRenderbufferStorage(GL3.GL_RENDERBUFFER, format.glid, width, height);
 	}
 
 	/**
@@ -2922,7 +1808,7 @@ public class OGLGraphics
 	 */
 	public void unsetFrameRenderBuffer()
 	{
-		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, 0);
+		gl.glBindRenderbuffer(GL3.GL_RENDERBUFFER, 0);
 	}
 
 	/**
@@ -2944,7 +1830,7 @@ public class OGLGraphics
 		if (frameBuffer == null)
 			unsetFrameBuffer();
 		else
-			gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, frameBuffer.getGLId());
+			gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, frameBuffer.getGLId());
 	}
 
 	/**
@@ -2953,34 +1839,34 @@ public class OGLGraphics
 	 */
 	public void checkFrameBufferStatus()
 	{
-		int status = gl.glCheckFramebufferStatus(GL2.GL_FRAMEBUFFER);
+		int status = gl.glCheckFramebufferStatus(GL3.GL_FRAMEBUFFER);
 		String errorString = null;
-		if (status != GL2.GL_FRAMEBUFFER_COMPLETE) 
+		if (status != GL3.GL_FRAMEBUFFER_COMPLETE) 
 		{
 			switch (status)
 			{
-				case GL2.GL_FRAMEBUFFER_UNSUPPORTED:
+				case GL3.GL_FRAMEBUFFER_UNSUPPORTED:
 					errorString = "Framebuffer object format is unsupported by the video hardware.";
 					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+				case GL3.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 					errorString = "Incomplete attachment.";
 					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+				case GL3.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 					errorString = "Incomplete missing attachment.";
 					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+				case GL3.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
 					errorString = "Incomplete dimensions.";
 					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
+				case GL3.GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
 					errorString = "Incomplete formats.";
 					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+				case GL3.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
 					errorString = "Incomplete draw buffer.";
 					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+				case GL3.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
 					errorString = "Incomplete read buffer.";
 					break;
-				case GL2.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+				case GL3.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
 					errorString = "Incomplete multisample buffer.";
 					break;
 				default:
@@ -2999,7 +1885,7 @@ public class OGLGraphics
 	public void attachFramebufferTexture2D(AttachPoint attachPoint, OGLTexture texture)
 	{
 		clearError();
-		gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_TEXTURE_2D, texture.getGLId(), 0);
+		gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, attachPoint.glVal, GL3.GL_TEXTURE_2D, texture.getGLId(), 0);
 		getError();
 	}
 	
@@ -3010,7 +1896,7 @@ public class OGLGraphics
 	public void detachFramebufferTexture2D(AttachPoint attachPoint)
 	{
 		clearError();
-		gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_TEXTURE_2D, 0, 0);
+		gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, attachPoint.glVal, GL3.GL_TEXTURE_2D, 0, 0);
 		getError();
 	}
 	
@@ -3022,7 +1908,7 @@ public class OGLGraphics
 	public void attachRenderBuffer(AttachPoint attachPoint, OGLRenderBuffer renderBuffer)
 	{
 		clearError();
-		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_RENDERBUFFER, renderBuffer.getGLId());
+		gl.glFramebufferRenderbuffer(GL3.GL_FRAMEBUFFER, attachPoint.glVal, GL3.GL_RENDERBUFFER, renderBuffer.getGLId());
 		getError();
 	}
 	
@@ -3033,7 +1919,7 @@ public class OGLGraphics
 	public void detachFrameRenderBuffer(AttachPoint attachPoint)
 	{
 		clearError();
-		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER, attachPoint.glVal, GL2.GL_RENDERBUFFER, 0);
+		gl.glFramebufferRenderbuffer(GL3.GL_FRAMEBUFFER, attachPoint.glVal, GL3.GL_RENDERBUFFER, 0);
 		getError();
 	}
 	
@@ -3043,7 +1929,7 @@ public class OGLGraphics
 	 */
 	public void unsetFrameBuffer()
 	{
-		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
+		gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 	}
 
 	/**
@@ -3069,7 +1955,7 @@ public class OGLGraphics
 	{
 		if (currentOcclusionQuery != null)
 			throw new GraphicsException("An occlusion query is already active.");
-		gl.glBeginQuery(GL2.GL_SAMPLES_PASSED, query.getGLId());
+		gl.glBeginQuery(GL3.GL_SAMPLES_PASSED, query.getGLId());
 		currentOcclusionQuery = query;
 	}
 
@@ -3084,7 +1970,7 @@ public class OGLGraphics
 	{
 		if (currentOcclusionQuery == null)
 			throw new GraphicsException("Attempt to end query without starting one.");
-		gl.glEndQuery(GL2.GL_SAMPLES_PASSED);
+		gl.glEndQuery(GL3.GL_SAMPLES_PASSED);
 		currentOcclusionQuery = null;
 	}
 
@@ -3261,120 +2147,8 @@ public class OGLGraphics
 		gl.glBindBuffer(type.glValue, 0);
 	}
 
-	/**
-	 * Enables or disables the processing of bound vertex arrays and/or buffers.
-	 */
-	public void setVertexArrayEnabled(boolean flag)
-	{
-		glClientFlagSet(GL2.GL_VERTEX_ARRAY,flag);
-	}
-
-	/**
-	 * Enables or disables the processing of bound vertex arrays and/or buffers at a specific attrib index.
-	 */
-	public void setVertexAttribArrayEnabled(int index, boolean flag)
-	{
-		if (flag)
-			gl.glEnableVertexAttribArray(index);
-		else
-			gl.glDisableVertexAttribArray(index);
-	}
-
-	/**
-	 * Enables or disables the processing of bound texture coordinate arrays.
-	 */
-	public void setTextureCoordArrayEnabled(boolean flag)
-	{
-		glClientFlagSet(GL2.GL_TEXTURE_COORD_ARRAY,flag);
-	}
-
-	/**
-	 * Sets the current client active texture (for coordinates).
-	 */
-	public void setCurrentActiveTextureCoordArray(int unit)
-	{
-		gl.glClientActiveTexture(GL.GL_TEXTURE0 + unit);
-	}
-
-	/**
-	 * Enables or disables the processing of bound vertex color arrays.
-	 */
-	public void setColorArrayEnabled(boolean flag)
-	{
-		glClientFlagSet(GL2.GL_COLOR_ARRAY,flag);
-	}
-
-	/**
-	 * Enables or disables the processing of bound surface normal arrays.
-	 */
-	public void setNormalArrayEnabled(boolean flag)
-	{
-		glClientFlagSet(GL2.GL_NORMAL_ARRAY,flag);
-	}
-
-	/**
-	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
-	 * This sets the vertex pointers.
-	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
-	 * @param width the width of a full set of coordinates (3-dimensional vertices = 3).
-	 * @param stride the distance (in elements) between each vertex.    
-	 * @param offset the offset in each stride where each vertex starts.  
-	 * @see #setBuffer(BufferType, OGLBuffer)
-	 * @see #setVertexArrayEnabled(boolean)   
-	 */
-	public void setBufferPointerVertex(DataType dataType, int width, int stride, int offset)
-	{
-		gl.glVertexPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
-		getError();
-	}
-
-	/**
-	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
-	 * This sets the texture coordinate pointers.
-	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
-	 * @param width the width of a full set of coordinates (2-dimensional coords = 2).
-	 * @param stride the distance (in elements) between each coordinate group.     
-	 * @param offset the offset in each stride where each coordinate starts.     
-	 * @see #setBuffer(BufferType, OGLBuffer)
-	 * @see #setTextureCoordArrayEnabled(boolean)   
-	 */
-	public void setBufferPointerTextureCoordinate(DataType dataType, int width, int stride, int offset)
-	{
-		gl.glTexCoordPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
-		getError();
-	}
-
-	/**
-	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
-	 * This sets the normal vector pointers. Always assumes 3-dimensional vectors.
-	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
-	 * @param stride the distance (in elements) between each normal.     
-	 * @param offset the offset in each stride where each normal starts.     
-	 * @see #setBuffer(BufferType, OGLBuffer)
-	 * @see #setNormalArrayEnabled(boolean)   
-	 */
-	public void setBufferPointerNormal(DataType dataType, int stride, int offset)
-	{
-		gl.glNormalPointer(dataType.glValue, stride * dataType.size, offset * dataType.size);
-		getError();
-	}
-
-	/**
-	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
-	 * This sets the color pointers.
-	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
-	 * @param width the width of a full set of color components (4-component color = 4).
-	 * @param stride the distance (in elements) between each color.   
-	 * @param offset the offset in each stride where each color starts.     
-	 * @see #setBuffer(BufferType, OGLBuffer)
-	 * @see #setColorArrayEnabled(boolean)   
-	 */
-	public void setBufferPointerColor(DataType dataType, int width, int stride, int offset)
-	{
-		gl.glColorPointer(width, dataType.glValue, stride * dataType.size, offset * dataType.size);
-		getError();
-	}
-
+	// TODO: Add Vertex attrib binders.
+	
 	/**
 	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data.
 	 * @param geometryType the geometry type - tells how to interpret the data.
@@ -3383,14 +2157,6 @@ public class OGLGraphics
 	 * NOTE: an element is in terms of array elements, so if the bound buffers describe the coordinates of 4 vertices,
 	 * <code>elementCount</code> should be 4.
 	 * @see #setBuffer(BufferType, OGLBuffer)
-	 * @see #setVertexArrayEnabled(boolean)
-	 * @see #setTextureCoordArrayEnabled(boolean)
-	 * @see #setNormalArrayEnabled(boolean)
-	 * @see #setColorArrayEnabled(boolean)
-	 * @see #setBufferPointerVertex(DataType, int, int, int)
-	 * @see #setBufferPointerTextureCoordinate(DataType, int, int, int)
-	 * @see #setBufferPointerNormal(DataType, int, int)
-	 * @see #setBufferPointerColor(DataType, int, int, int)
 	 */
 	public void drawBufferGeometry(GeometryType geometryType, int offset, int elementCount)
 	{
@@ -3406,14 +2172,6 @@ public class OGLGraphics
 	 * @param count the amount of element indices to interpret in the {@link BufferType#INDICES}-bound buffer.
 	 * @param offset the starting offset in the index buffer (in elements).
 	 * @see #setBuffer(BufferType, OGLBuffer)
-	 * @see #setVertexArrayEnabled(boolean)
-	 * @see #setTextureCoordArrayEnabled(boolean)
-	 * @see #setNormalArrayEnabled(boolean)
-	 * @see #setColorArrayEnabled(boolean)
-	 * @see #setBufferPointerVertex(DataType, int, int, int)
-	 * @see #setBufferPointerTextureCoordinate(DataType, int, int, int)
-	 * @see #setBufferPointerNormal(DataType, int, int)
-	 * @see #setBufferPointerColor(DataType, int, int, int)
 	 */
 	public void drawBufferGeometryElements(GeometryType geometryType, DataType dataType, int count, int offset)
 	{
@@ -3430,14 +2188,6 @@ public class OGLGraphics
 	 * @param endIndex the ending index in the range.
 	 * @param count the amount of element indices to read.
 	 * @see #setBuffer(BufferType, OGLBuffer)
-	 * @see #setVertexArrayEnabled(boolean)
-	 * @see #setTextureCoordArrayEnabled(boolean)
-	 * @see #setNormalArrayEnabled(boolean)
-	 * @see #setColorArrayEnabled(boolean)
-	 * @see #setBufferPointerVertex(DataType, int, int, int)
-	 * @see #setBufferPointerTextureCoordinate(DataType, int, int, int)
-	 * @see #setBufferPointerNormal(DataType, int, int)
-	 * @see #setBufferPointerColor(DataType, int, int, int)
 	 */
 	public void drawBufferGeometryElementRange(GeometryType geometryType, DataType dataType, int startIndex, int endIndex, int count)
 	{

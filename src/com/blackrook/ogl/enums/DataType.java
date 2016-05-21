@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.*;
+import com.jogamp.opengl.GL3;
 
 /**
  * Enumeration of DataTypes.
@@ -18,14 +18,14 @@ import com.jogamp.opengl.*;
  */
 public enum DataType
 {
-	BYTE(GL2.GL_BYTE, 1),
-	UNSIGNED_BYTE(GL2.GL_UNSIGNED_BYTE, 1),
-	SHORT(GL2.GL_SHORT, 2),
-	UNSIGNED_SHORT(GL2.GL_UNSIGNED_SHORT, 2),
-	FLOAT(GL2.GL_FLOAT, 4),
-	INTEGER(GL2.GL_INT, 4),
-	UNSIGNED_INTEGER(GL2.GL_UNSIGNED_INT, 4),
-	DOUBLE(GL2.GL_DOUBLE, 8);
+	BYTE(GL3.GL_BYTE, 1),
+	UNSIGNED_BYTE(GL3.GL_UNSIGNED_BYTE, 1),
+	SHORT(GL3.GL_SHORT, 2),
+	UNSIGNED_SHORT(GL3.GL_UNSIGNED_SHORT, 2),
+	FLOAT(GL3.GL_FLOAT, 4),
+	INTEGER(GL3.GL_INT, 4),
+	UNSIGNED_INTEGER(GL3.GL_UNSIGNED_INT, 4),
+	DOUBLE(GL3.GL_DOUBLE, 8);
 	
 	public final int glValue;
 	public final int size;

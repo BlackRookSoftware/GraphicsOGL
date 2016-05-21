@@ -66,7 +66,7 @@ public class OGLShaderProgramVertex extends OGLShaderProgram
 	@Override
 	protected int allocate(OGLGraphics g)
 	{
-		return g.getGL().glCreateShader(ShaderProgramType.VERTEX.glShaderType);
+		return g.getGL().glCreateShader(ShaderProgramType.VERTEX.glValue);
 	}
 	
 }

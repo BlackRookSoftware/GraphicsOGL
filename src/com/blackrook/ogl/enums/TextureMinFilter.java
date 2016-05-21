@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL3;
 
 /**
  * Minification filters.
@@ -21,22 +21,22 @@ public enum TextureMinFilter
 	/** 
 	 * Nearest minification - color using nearest neighbor (aliased - bad approximation). 
 	 */
-	NEAREST(GL2.GL_NEAREST),
+	NEAREST(GL3.GL_NEAREST),
 	/** 
 	 * Linear minification - color using cluster average (okay approximation). 
 	 */
-	LINEAR(GL2.GL_LINEAR),
+	LINEAR(GL3.GL_LINEAR),
 	/** 
 	 * Bilinear minification - color using cluster average and next mipmap's
 	 * nearest neighbor (better approximation). 
 	 */
-	BILINEAR(GL2.GL_LINEAR_MIPMAP_NEAREST),
+	BILINEAR(GL3.GL_LINEAR_MIPMAP_NEAREST),
 	/** 
 	 * Trilinear minification - color using cluster average and next mipmap's 
 	 * cluster average (best approximation).
 	 * Also called "bicubic" or "cubic." 
 	 */
-	TRILINEAR(GL2.GL_LINEAR_MIPMAP_LINEAR);
+	TRILINEAR(GL3.GL_LINEAR_MIPMAP_LINEAR);
 	
 	public final int glid;
 	private TextureMinFilter(int id) {glid = id;}

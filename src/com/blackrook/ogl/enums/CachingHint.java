@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.*;
+import com.jogamp.opengl.GL3;
 
 /**
  * Caching hint for vertex/pixel buffer data.
@@ -19,23 +19,23 @@ import com.jogamp.opengl.*;
 public enum CachingHint
 {
 	/** Write once, use many, app to GL. */
-	STATIC_DRAW(GL2.GL_STATIC_DRAW),
+	STATIC_DRAW(GL3.GL_STATIC_DRAW),
 	/** Write once, use many, GL to app. */
-	STATIC_READ(GL2.GL_STATIC_READ),
+	STATIC_READ(GL3.GL_STATIC_READ),
 	/** Write once, use many, GL to GL. */
-	STATIC_COPY(GL2.GL_STATIC_COPY),
+	STATIC_COPY(GL3.GL_STATIC_COPY),
 	/** Write many, use many, app to GL. */
-	DYNAMIC_DRAW(GL2.GL_DYNAMIC_DRAW),
+	DYNAMIC_DRAW(GL3.GL_DYNAMIC_DRAW),
 	/** Write many, use many, GL to app. */
-	DYNAMIC_READ(GL2.GL_DYNAMIC_READ),
+	DYNAMIC_READ(GL3.GL_DYNAMIC_READ),
 	/** Write many, use many, GL to GL. */
-	DYNAMIC_COPY(GL2.GL_DYNAMIC_COPY),
+	DYNAMIC_COPY(GL3.GL_DYNAMIC_COPY),
 	/** Write once, use once, app to GL. */
-	STREAM_DRAW(GL2.GL_STREAM_DRAW),
+	STREAM_DRAW(GL3.GL_STREAM_DRAW),
 	/** Write once, use once, GL to app. */
-	STREAM_READ(GL2.GL_STREAM_READ),
+	STREAM_READ(GL3.GL_STREAM_READ),
 	/** Write once, use once, GL to GL. */
-	STREAM_COPY(GL2.GL_STREAM_COPY);
+	STREAM_COPY(GL3.GL_STREAM_COPY);
 	
 	public final int glValue;
 	private CachingHint (int val) {glValue = val;}

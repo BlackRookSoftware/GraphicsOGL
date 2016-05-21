@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL3;
 
 /**
  * Enum for face sides.
@@ -19,11 +19,11 @@ import com.jogamp.opengl.GL;
 public enum FaceSide
 {
 	/** Front polygon face. */
-	FRONT(GL.GL_FRONT),
+	FRONT(GL3.GL_FRONT),
 	/** Back polygon face. */
-	BACK(GL.GL_BACK),
+	BACK(GL3.GL_BACK),
 	/** Front and back polygon faces. */
-	FRONT_AND_BACK(GL.GL_FRONT_AND_BACK);
+	FRONT_AND_BACK(GL3.GL_FRONT_AND_BACK);
 	
 	public final int glValue;
 	FaceSide(int gltype) 
@@ -35,8 +35,8 @@ public enum FaceSide
 	 */
 	public static enum Direction
 	{
-		COUNTERCLOCKWISE(GL.GL_CCW),
-		CLOCKWISE(GL.GL_CW);
+		COUNTERCLOCKWISE(GL3.GL_CCW),
+		CLOCKWISE(GL3.GL_CW);
 
 		public final int glValue;
 		Direction(int gltype) 

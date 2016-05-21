@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL3;
 
 /**
  * Reusable logical enumerations. 
@@ -19,15 +19,15 @@ import com.jogamp.opengl.GL;
 public enum LogicFunc
 {
 	/** Always. Always what? I dunno. Just ALWAYS. */
-	ALWAYS(GL.GL_ALWAYS),
+	ALWAYS(GL3.GL_ALWAYS),
 	/** Never. Don't even think about it. */
-	NEVER(GL.GL_NEVER),
-	EQUAL(GL.GL_EQUAL),
-	NOT_EQUAL(GL.GL_NOTEQUAL),
-	LESS(GL.GL_LESS),
-	GREATER(GL.GL_GREATER),
-	LESS_OR_EQUAL(GL.GL_LEQUAL),
-	GREATER_OR_EQUAL(GL.GL_GEQUAL);
+	NEVER(GL3.GL_NEVER),
+	EQUAL(GL3.GL_EQUAL),
+	NOT_EQUAL(GL3.GL_NOTEQUAL),
+	LESS(GL3.GL_LESS),
+	GREATER(GL3.GL_GREATER),
+	LESS_OR_EQUAL(GL3.GL_LEQUAL),
+	GREATER_OR_EQUAL(GL3.GL_GEQUAL);
 	
 	public final int glValue;
 	LogicFunc(int gltype) 

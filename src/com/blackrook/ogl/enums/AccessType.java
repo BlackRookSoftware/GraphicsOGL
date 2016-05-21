@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.*;
+import com.jogamp.opengl.GL3;
 
 /**
  * Access type enumeration.
@@ -22,17 +22,17 @@ public enum AccessType
 	 * Buffer is filled with current data on map, 
 	 * but not written back on unmap. 
 	 */
-	READ(GL2.GL_READ_ONLY),
+	READ(GL3.GL_READ_ONLY),
 	/** 
 	 * Buffer is filled with undefined data on map, 
 	 * writes back its contents on unmap. 
 	 */
-	WRITE(GL2.GL_WRITE_ONLY),
+	WRITE(GL3.GL_WRITE_ONLY),
 	/** 
 	 * Buffer is filled with current data on map, 
 	 * writes back its contents on unmap. 
 	 */
-	READ_AND_WRITE(GL2.GL_READ_WRITE);
+	READ_AND_WRITE(GL3.GL_READ_WRITE);
 	
 	public final int glValue;
 	private AccessType (int val) {glValue = val;}

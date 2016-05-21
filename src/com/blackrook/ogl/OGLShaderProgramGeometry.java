@@ -70,7 +70,7 @@ public class OGLShaderProgramGeometry extends OGLShaderProgram
 	@Override
 	protected int allocate(OGLGraphics g)
 	{
-		return g.getGL().glCreateShader(ShaderProgramType.GEOMETRY.glShaderType);
+		return g.getGL().glCreateShader(ShaderProgramType.GEOMETRY.glValue);
 	}
 	
 }

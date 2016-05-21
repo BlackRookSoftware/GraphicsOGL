@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.*;
+import com.jogamp.opengl.GL3;
 
 /**
  * Enumeration of OpenGL FrameBuffer types.
@@ -18,20 +18,16 @@ import com.jogamp.opengl.*;
  */
 public enum FrameBufferType
 {
-	NONE(GL2.GL_NONE),
-	FRONT(GL2.GL_FRONT),
-	BACK(GL2.GL_BACK),
-	LEFT(GL2.GL_LEFT),
-	RIGHT(GL2.GL_RIGHT),
-	FRONT_LEFT(GL2.GL_FRONT_LEFT),
-	FRONT_RIGHT(GL2.GL_FRONT_RIGHT),
-	BACK_LEFT(GL2.GL_BACK_LEFT),
-	BACK_RIGHT(GL2.GL_BACK_RIGHT),
-	FRONT_AND_BACK(GL2.GL_FRONT_AND_BACK),
-	AUX0(GL2.GL_AUX0),
-	AUX1(GL2.GL_AUX1),
-	AUX2(GL2.GL_AUX2),
-	AUX3(GL2.GL_AUX3);
+	NONE(GL3.GL_NONE),
+	FRONT(GL3.GL_FRONT),
+	BACK(GL3.GL_BACK),
+	LEFT(GL3.GL_LEFT),
+	RIGHT(GL3.GL_RIGHT),
+	FRONT_LEFT(GL3.GL_FRONT_LEFT),
+	FRONT_RIGHT(GL3.GL_FRONT_RIGHT),
+	BACK_LEFT(GL3.GL_BACK_LEFT),
+	BACK_RIGHT(GL3.GL_BACK_RIGHT),
+	;
 	
 	public final int glValue;
 	private FrameBufferType (int val) {glValue = val;}

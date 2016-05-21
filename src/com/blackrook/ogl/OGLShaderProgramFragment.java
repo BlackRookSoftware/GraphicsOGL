@@ -70,7 +70,7 @@ public class OGLShaderProgramFragment extends OGLShaderProgram
 	@Override
 	protected int allocate(OGLGraphics g)
 	{
-		return g.getGL().glCreateShader(ShaderProgramType.FRAGMENT.glShaderType);
+		return g.getGL().glCreateShader(ShaderProgramType.FRAGMENT.glValue);
 	}
 	
 }

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.*;
+import com.jogamp.opengl.GL3;
 
 /**
  * Geometry type 
@@ -18,7 +18,7 @@ import com.jogamp.opengl.*;
  */
 public enum GeometryType
 {
-	POINTS(GL2.GL_POINTS, true)
+	POINTS(GL3.GL_POINTS, true)
 	{
 		@Override
 		public int calculatePolygonCount(int elementCount)
@@ -26,7 +26,7 @@ public enum GeometryType
 			return elementCount;
 		}
 	},
-	LINES(GL2.GL_LINES, true)
+	LINES(GL3.GL_LINES, true)
 	{
 		@Override
 		public int calculatePolygonCount(int elementCount)
@@ -34,7 +34,7 @@ public enum GeometryType
 			return elementCount/2;
 		}
 	},
-	LINE_STRIP(GL2.GL_LINE_STRIP, false)
+	LINE_STRIP(GL3.GL_LINE_STRIP, false)
 	{
 		@Override
 		public int calculatePolygonCount(int elementCount)
@@ -42,7 +42,7 @@ public enum GeometryType
 			return 1;
 		}
 	},
-	LINE_LOOP(GL2.GL_LINE_LOOP, false)
+	LINE_LOOP(GL3.GL_LINE_LOOP, false)
 	{
 		@Override
 		public int calculatePolygonCount(int elementCount)
@@ -50,7 +50,7 @@ public enum GeometryType
 			return 1;
 		}
 	},
-	TRIANGLES(GL2.GL_TRIANGLES, true)
+	TRIANGLES(GL3.GL_TRIANGLES, true)
 	{
 		@Override
 		public int calculatePolygonCount(int elementCount)
@@ -58,7 +58,7 @@ public enum GeometryType
 			return elementCount / 3;
 		}
 	},
-	TRIANGLE_STRIP(GL2.GL_TRIANGLE_STRIP, false)
+	TRIANGLE_STRIP(GL3.GL_TRIANGLE_STRIP, false)
 	{
 		@Override
 		public int calculatePolygonCount(int elementCount)
@@ -66,7 +66,7 @@ public enum GeometryType
 			return elementCount - 2;
 		}
 	},
-	TRIANGLE_FAN(GL2.GL_TRIANGLE_FAN, false)
+	TRIANGLE_FAN(GL3.GL_TRIANGLE_FAN, false)
 	{
 		@Override
 		public int calculatePolygonCount(int elementCount)
@@ -74,7 +74,7 @@ public enum GeometryType
 			return elementCount - 2;
 		}
 	},
-	QUADS(GL2.GL_QUADS, true)
+	QUADS(GL3.GL_QUADS, true)
 	{
 		@Override
 		public int calculatePolygonCount(int elementCount)
@@ -82,22 +82,7 @@ public enum GeometryType
 			return elementCount / 4;
 		}
 	},
-	QUAD_STRIP(GL2.GL_QUAD_STRIP, false)
-	{
-		@Override
-		public int calculatePolygonCount(int elementCount)
-		{
-			return (elementCount - 2) / 2;
-		}
-	},
-	POLYGON(GL2.GL_POLYGON, false)
-	{
-		@Override
-		public int calculatePolygonCount(int elementCount)
-		{
-			return 1;
-		}
-	};
+	;
 	
 	public final int glValue;
 	private final boolean batchable; 

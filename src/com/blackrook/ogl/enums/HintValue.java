@@ -10,20 +10,20 @@
  *******************************************************************************/
 package com.blackrook.ogl.enums;
 
-import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL3;
 
 /**
- * Hint enum types for GL Hints.
+ * Hint enum types for GL3 Hints.
  * @author Matthew Tropiano
  */
 public enum HintValue
 {
 	/** Don't care about the quality. */
-	DONT_CARE(GL.GL_DONT_CARE),
+	DONT_CARE(GL3.GL_DONT_CARE),
 	/** Use the best performing method. */
-	FASTEST(GL.GL_FASTEST),
+	FASTEST(GL3.GL_FASTEST),
 	/** Use the best quality method. */
-	NICEST(GL.GL_NICEST);
+	NICEST(GL3.GL_NICEST);
 
 	public final int glValue;
 	HintValue(int gltype) 

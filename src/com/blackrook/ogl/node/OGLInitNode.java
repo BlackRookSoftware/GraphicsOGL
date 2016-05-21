@@ -21,16 +21,10 @@ import com.blackrook.ogl.enums.HintValue;
  */
 public class OGLInitNode extends OGLTriggeredNode
 {
-	/** Point smoothing hint. */
-	private HintValue glPointSmoothHint;
 	/** Line smoothing hint. */
 	private HintValue glLineSmoothHint;
 	/** Polygon smoothing hint. */
 	private HintValue glPolygonSmoothHint;
-	/** Fog calculation hint. */
-	private HintValue glFogCalculationHint;
-	/** Perspective correction hint. */
-	private HintValue glPerspectiveCorrectionHint;
 	/** Generate Mipmapping hint. */
 	private HintValue glGenerateMipmapHint;
 	/** Texture compression hint. */
@@ -60,22 +54,11 @@ public class OGLInitNode extends OGLTriggeredNode
 	public void doTriggeredFunction(OGLGraphics g)
 	{
     	g.setVSync(vsyncEnabled);
-		g.setHint(HintType.POINT_SMOOTHING, glPointSmoothHint);
 		g.setHint(HintType.LINE_SMOOTHING, glLineSmoothHint);
 		g.setHint(HintType.POLYGON_SMOOTHING, glPolygonSmoothHint);
-		g.setHint(HintType.FOG, glFogCalculationHint);
 		g.setHint(HintType.MIPMAPPING, glGenerateMipmapHint);
 		g.setHint(HintType.TEXTURE_COMPRESSION, glTextureCompressionHint);
-		g.setHint(HintType.PERSPECTIVE_CORRECTION, glPerspectiveCorrectionHint);
 		g.setFillMode(fillMode);
-	}
-
-	/**
-	 * Get point smooth hint value.
-	 */
-	public HintValue getPointSmoothHint()
-	{
-		return glPointSmoothHint;
 	}
 
 	/**
@@ -95,14 +78,6 @@ public class OGLInitNode extends OGLTriggeredNode
 	}
 
 	/**
-	 * Get fog color calculation hint.
-	 */
-	public HintValue getFogCalculationHint()
-	{
-		return glFogCalculationHint;
-	}
-
-	/**
 	 * Get mipmap generation hint.
 	 */
 	public HintValue getGenerateMipmapHint()
@@ -116,14 +91,6 @@ public class OGLInitNode extends OGLTriggeredNode
 	public HintValue getTextureCompressionHint()
 	{
 		return glTextureCompressionHint;
-	}
-
-	/**
-	 * Set point smooth hint value.
-	 */
-	public void setPointSmoothHint(HintValue pointSmoothHint)
-	{
-		glPointSmoothHint = pointSmoothHint;
 	}
 
 	/**
@@ -143,14 +110,6 @@ public class OGLInitNode extends OGLTriggeredNode
 	}
 
 	/**
-	 * Set fog calculation hint.
-	 */
-	public void setFogCalculationHint(HintValue fogCalculationHint)
-	{
-		glFogCalculationHint = fogCalculationHint;
-	}
-
-	/**
 	 * Set mipmap generation hint.
 	 */
 	public void setGenerateMipmapHint(HintValue generateMipmapHint)
@@ -167,31 +126,12 @@ public class OGLInitNode extends OGLTriggeredNode
 	}
 
 	/**
-	 * Get prespective correction hint. 
-	 */
-	public HintValue getPerspectiveCorrectionHint()
-	{
-		return glPerspectiveCorrectionHint;
-	}
-
-	/**
-	 * Set prespective correction hint. 
-	 */
-	public void setPerspectiveCorrectionHint(HintValue perspectiveCorrectionHint)
-	{
-		glPerspectiveCorrectionHint = perspectiveCorrectionHint;
-	}
-
-	/**
 	 * Sets all hint options to...
 	 */
 	public void setAllHintsTo(HintValue hint)
 	{
-		setFogCalculationHint(hint);
 		setGenerateMipmapHint(hint);
 		setLineSmoothHint(hint);
-		setPerspectiveCorrectionHint(hint);
-		setPointSmoothHint(hint);
 		setPolygonSmoothHint(hint);
 		setTextureCompressionHint(hint);
 	}
