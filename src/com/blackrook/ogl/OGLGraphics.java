@@ -22,14 +22,37 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
-import com.jogamp.opengl.*;
+import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.util.gl2.GLUT;
+import com.blackrook.commons.Common;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.math.Matrix4F;
 import com.blackrook.commons.math.RMath;
-import com.blackrook.ogl.data.*;
-import com.blackrook.ogl.enums.*;
+import com.blackrook.ogl.data.OGLColor;
+import com.blackrook.ogl.enums.AccessType;
+import com.blackrook.ogl.enums.AttachPoint;
+import com.blackrook.ogl.enums.BlendArg;
+import com.blackrook.ogl.enums.BlendFunc;
+import com.blackrook.ogl.enums.BufferType;
+import com.blackrook.ogl.enums.CachingHint;
+import com.blackrook.ogl.enums.DataType;
+import com.blackrook.ogl.enums.FaceSide;
+import com.blackrook.ogl.enums.FillMode;
+import com.blackrook.ogl.enums.FrameBufferType;
+import com.blackrook.ogl.enums.GeometryType;
+import com.blackrook.ogl.enums.HintType;
+import com.blackrook.ogl.enums.HintValue;
+import com.blackrook.ogl.enums.LogicFunc;
+import com.blackrook.ogl.enums.RenderbufferFormat;
+import com.blackrook.ogl.enums.ShaderProgramType;
+import com.blackrook.ogl.enums.SpriteOrigin;
+import com.blackrook.ogl.enums.StencilTestFunc;
+import com.blackrook.ogl.enums.TextureCubeFace;
+import com.blackrook.ogl.enums.TextureFormat;
+import com.blackrook.ogl.enums.TextureMagFilter;
+import com.blackrook.ogl.enums.TextureMinFilter;
+import com.blackrook.ogl.enums.TextureWrapType;
 import com.blackrook.ogl.exception.GraphicsException;
 
 /**
@@ -94,6 +117,8 @@ public class OGLGraphics
 	private int maxTextureUnits;
 	/** Maximum texture size. */
 	private int maxTextureSize;
+	/** Maximum texture buffer size. */
+	private int maxTextureBufferSize;
 	/** Maximum renderbuffer size. */
 	private int maxRenderBufferSize;
 	/** Maximum renderbuffer color attachments. */
@@ -128,9 +153,6 @@ public class OGLGraphics
 	/** Current running occlusion query. */
 	private OGLOcclusionQuery currentOcclusionQuery;
 
-	private int[] INT_STATE;
-	private float[] FLOAT_STATE;
-	
 	/** Completely ignore error checking requests? */
 	private boolean errorIgnoring;
 	
@@ -161,9 +183,6 @@ public class OGLGraphics
 		extensionList = new CaseInsensitiveHash();
 		for (String s : exts)
 			extensionList.put(s);
-
-		INT_STATE = new int[32];
-		FLOAT_STATE = new float[32];
 
 		setArch();
 		setExtVars();
@@ -274,19 +293,22 @@ public class OGLGraphics
 
 		maxTextureUnits = getGLInt(GL3.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
 		maxTextureSize = getGLInt(GL3.GL_MAX_TEXTURE_SIZE);
+		maxTextureBufferSize = getGLInt(GL3.GL_MAX_TEXTURE_BUFFER_SIZE);
 		maxRenderBufferSize = getGLInt(GL3.GL_MAX_RENDERBUFFER_SIZE);
 		maxRenderBufferColorAttachments = getGLInt(GL3.GL_MAX_COLOR_ATTACHMENTS);
+		
+		Cache cache = getCache();
 		if (occlusionQueryExtensionPresent)
 		{
-			gl.glGetQueryiv(GL3.GL_SAMPLES_PASSED, GL3.GL_QUERY_COUNTER_BITS, INT_STATE, 0);
-			queryCounterBitDepth = INT_STATE[0];
+			gl.glGetQueryiv(GL3.GL_SAMPLES_PASSED, GL3.GL_QUERY_COUNTER_BITS, cache.intState, 0);
+			queryCounterBitDepth = cache.intState[0];
 		}
-		getGLFloats(GL3.GL_POINT_SIZE_RANGE, FLOAT_STATE);
-		minPointSize = FLOAT_STATE[0];
-		maxPointSize = FLOAT_STATE[1];
-		getGLFloats(GL3.GL_LINE_WIDTH_RANGE, FLOAT_STATE);
-		minLineWidth = FLOAT_STATE[0];
-		maxLineWidth = FLOAT_STATE[1];
+		getGLFloats(GL3.GL_POINT_SIZE_RANGE, cache.floatState);
+		minPointSize = cache.floatState[0];
+		maxPointSize = cache.floatState[1];
+		getGLFloats(GL3.GL_LINE_WIDTH_RANGE, cache.floatState);
+		minLineWidth = cache.floatState[0];
+		maxLineWidth = cache.floatState[1];
 	}
 
 	/**
@@ -295,8 +317,9 @@ public class OGLGraphics
 	 */
 	protected final int getGLInt(int glEnum)
 	{
-		gl.glGetIntegerv(glEnum, INT_STATE, 0);
-		return INT_STATE[0];
+		Cache cache = getCache();
+		gl.glGetIntegerv(glEnum, cache.intState, 0);
+		return cache.intState[0];
 	}
 	
 	/**
@@ -308,8 +331,10 @@ public class OGLGraphics
 	 */
 	protected final void getGLInts(int glEnum, int[] out)
 	{
-		gl.glGetIntegerv(glEnum, INT_STATE, 0);
-		System.arraycopy(INT_STATE, 0, out, 0, Math.min(INT_STATE.length, out.length));
+		Cache cache = getCache();
+		cache.intsize(out.length);
+		gl.glGetIntegerv(glEnum, cache.intState, 0);
+		System.arraycopy(cache.intState, 0, out, 0, out.length);
 	}
 	
 	/**
@@ -318,8 +343,9 @@ public class OGLGraphics
 	 */
 	protected final float getGLFloat(int glEnum)
 	{
-		gl.glGetFloatv(glEnum, FLOAT_STATE, 0);
-		return FLOAT_STATE[0];
+		Cache cache = getCache();
+		gl.glGetFloatv(glEnum, cache.floatState, 0);
+		return cache.floatState[0];
 	}
 	
 	/**
@@ -331,8 +357,10 @@ public class OGLGraphics
 	 */
 	protected final void getGLFloats(int glEnum, float[] out)
 	{
-		gl.glGetFloatv(glEnum, FLOAT_STATE, 0);
-		System.arraycopy(FLOAT_STATE, 0, out, 0, Math.min(FLOAT_STATE.length, out.length));
+		Cache cache = getCache();
+		cache.floatsize(out.length);
+		gl.glGetFloatv(glEnum, cache.floatState, 0);
+		System.arraycopy(cache.floatState, 0, out, 0, out.length);
 	}
 	
 	/**
@@ -421,11 +449,19 @@ public class OGLGraphics
 	}
 	
 	/**
-	 * Get max texture size in pixels.
+	 * Get max texture size in texels.
 	 */
 	public final int getMaxTextureSize()
 	{
 		return maxTextureSize;
+	}
+	
+	/**
+	 * Get max texture buffer size in bytes.
+	 */
+	public int getMaxTextureBufferSize() 
+	{
+		return maxTextureBufferSize;
 	}
 
 	/**
@@ -837,21 +873,6 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Sets the attenuation formula to use when changing the sizes
-	 * of points based on their location in space.
-	 * @param constant the formula constant coefficient.
-	 * @param linear the formula linear coefficient.
-	 * @param quadratic the formula quadratic coefficient.
-	 */
-	public void setPointAttenuationFormula(float constant, float linear, float quadratic)
-	{
-		FLOAT_STATE[0] = constant;
-		FLOAT_STATE[1] = linear;
-		FLOAT_STATE[2] = quadratic;
-		gl.glPointParameterfv(GL3.GL_POINT_DISTANCE_ATTENUATION, FLOAT_STATE, 0);
-	}
-
-	/**
 	 * Sets the width of line geometry.
 	 * @param width the width of the line in pixels.
 	 */
@@ -905,14 +926,6 @@ public class OGLGraphics
 	}
 
 	/**
-	 * Enables/Disables smooth point geometry.
-	 */
-	public void setPointSmoothingEnabled(boolean enabled)
-	{
-		glFlagSet(GL3.GL_POINT_SMOOTH, enabled);
-	}
-
-	/**
 	 * Enables/Disables line smoothing.
 	 * "Line smoothing" is a fancy term for anti-aliasing.
 	 */
@@ -925,10 +938,9 @@ public class OGLGraphics
 	 * Clears a bunch of framebuffers.
 	 * @param color		clear the color buffer?
 	 * @param depth		clear the depth buffer?
-	 * @param accum		clear the accumulation buffer?
 	 * @param stencil	clear the stencil buffer?
 	 */
-	public void clearFrameBuffers(boolean color, boolean depth, boolean accum, boolean stencil)
+	public void clearFrameBuffers(boolean color, boolean depth, boolean stencil)
 	{
 		gl.glClear(
 			(color? GL3.GL_COLOR_BUFFER_BIT : 0) | 
@@ -988,7 +1000,7 @@ public class OGLGraphics
 	 */
 	public void setPixelPackAlignment(int alignment)
 	{
-		gl.glPixelStorei(GL.GL_PACK_ALIGNMENT, alignment);
+		gl.glPixelStorei(GL3.GL_PACK_ALIGNMENT, alignment);
 	}
 
 	/**
@@ -998,7 +1010,7 @@ public class OGLGraphics
 	 */
 	public int getPixelPackAlignment()
 	{
-		return getGLInt(GL.GL_PACK_ALIGNMENT);
+		return getGLInt(GL3.GL_PACK_ALIGNMENT);
 	}
 
 	/**
@@ -1009,7 +1021,7 @@ public class OGLGraphics
 	 */
 	public void setPixelUnpackAlignment(int alignment)
 	{
-		gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, alignment);
+		gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, alignment);
 	}
 
 	/**
@@ -1019,7 +1031,7 @@ public class OGLGraphics
 	 */
 	public int getPixelUnpackAlignment()
 	{
-		return getGLInt(GL.GL_UNPACK_ALIGNMENT);
+		return getGLInt(GL3.GL_UNPACK_ALIGNMENT);
 	}
 
 	/**
@@ -1256,12 +1268,13 @@ public class OGLGraphics
 	/**
 	 * Sends a texture into OpenGL's memory for the current 1D texture.
 	 * @param imageData the BGRA image to send.
+	 * @param texlevel the mipmapping level to copy this into (0 is normal, no mipmapping).
 	 * @param format the internal format.
 	 * @param width the texture width in texels.
 	 * @param border the texel border to add, if any.
 	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
-	public void setTextureData1D(Buffer imageData, TextureFormat format, int width, int border)
+	public void setTextureData1D(Buffer imageData, int texlevel, TextureFormat format, int width, int border)
 	{
 		if (width > getMaxTextureSize())
 			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
@@ -1272,7 +1285,7 @@ public class OGLGraphics
 		clearError();
 		gl.glTexImage1D(
 			GL3.GL_TEXTURE_1D,
-			0,
+			texlevel,
 			format.glid, 
 			width,
 			border,
@@ -1286,11 +1299,12 @@ public class OGLGraphics
 	/**
 	 * Sends a subset of data to the currently-bound 1D texture already in OpenGL's memory.
 	 * @param imageData the BGRA image to send.
+	 * @param texlevel the mipmapping level to copy this into (0 is normal, no mipmapping).
 	 * @param width the texture width in texels.
 	 * @param xoffs the texel offset.
 	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
-	public void setTextureSubData1D(Buffer imageData, int width, int xoffs)
+	public void setTextureSubData1D(Buffer imageData, int texlevel, int width, int xoffs)
 	{
 		if (!imageData.isDirect())
 			throw new GraphicsException("Data must be a direct buffer."); 
@@ -1298,7 +1312,7 @@ public class OGLGraphics
 		clearError();
 		gl.glTexSubImage1D(
 			GL3.GL_TEXTURE_1D,
-			0,
+			texlevel,
 			xoffs,
 			width,
 			GL3.GL_BGRA,
@@ -1356,13 +1370,14 @@ public class OGLGraphics
 	/**
 	 * Sends a texture into OpenGL's memory for the current 2D texture.
 	 * @param imageData the BGRA image to send.
+	 * @param texlevel the mipmapping level to copy this into (0 is normal, no mipmapping).
 	 * @param format the internal format.
 	 * @param width the texture width in texels.
 	 * @param height the texture height in texels.
 	 * @param border the texel border to add, if any.
 	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
-	public void setTextureData2D(Buffer imageData, TextureFormat format, int width, int height, int border)
+	public void setTextureData2D(Buffer imageData, int texlevel, TextureFormat format, int width, int height, int border)
 	{
 		if (width > getMaxTextureSize() || height > getMaxTextureSize())
 			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
@@ -1373,7 +1388,7 @@ public class OGLGraphics
 		clearError();
 		gl.glTexImage2D(
 			GL3.GL_TEXTURE_2D,
-			0,
+			texlevel,
 			format.glid, 
 			width,
 			height,
@@ -1388,13 +1403,14 @@ public class OGLGraphics
 	/**
 	 * Sends a subset of data to the currently-bound 2D texture already in OpenGL's memory.
 	 * @param imageData the BGRA image to send.
+	 * @param texlevel the mipmapping level to copy this into (0 is normal, no mipmapping).
 	 * @param width the texture width in texels.
 	 * @param height the texture height in texels.
 	 * @param xoffs the texel offset.
 	 * @param yoffs the texel offset.
 	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
-	public void setTextureSubData2D(Buffer imageData, int width, int height, int xoffs, int yoffs)
+	public void setTextureSubData2D(Buffer imageData, int texlevel, int width, int height, int xoffs, int yoffs)
 	{
 		if (!imageData.isDirect())
 			throw new GraphicsException("Data must be a direct buffer."); 
@@ -1402,7 +1418,7 @@ public class OGLGraphics
 		clearError();
 		gl.glTexSubImage2D(
 			GL3.GL_TEXTURE_2D,
-			0,
+			texlevel,
 			xoffs,
 			yoffs,
 			width,
@@ -1416,14 +1432,14 @@ public class OGLGraphics
 	
 	/**
 	 * Copies the contents of the current read frame buffer into a two-dimensional texture.
-	 * @param texture	the texture object.
-	 * @param texlevel	the mipmapping level to copy this into (0 is normal, no mipmapping).
-	 * @param xoffset	the offset in pixels on this texture (x-coordinate) to put this texture data.
-	 * @param yoffset	the offset in pixels on this texture (y-coordinate) to put this texture data.
-	 * @param srcX		the screen-aligned x-coordinate of what to grab from the buffer (0 is the left side of the screen).
-	 * @param srcY		the screen-aligned y-coordinate of what to grab from the buffer (0 is the bottom of the screen).
-	 * @param width		the width of the screen in pixels to grab.
-	 * @param height	the height of the screen in pixels to grab.
+	 * @param texture the texture object.
+	 * @param texlevel the mipmapping level to copy this into (0 is normal, no mipmapping).
+	 * @param xoffset the offset in pixels on this texture (x-coordinate) to put this texture data.
+	 * @param yoffset the offset in pixels on this texture (y-coordinate) to put this texture data.
+	 * @param srcX the screen-aligned x-coordinate of what to grab from the buffer (0 is the left side of the screen).
+	 * @param srcY the screen-aligned y-coordinate of what to grab from the buffer (0 is the bottom of the screen).
+	 * @param width the width of the screen in pixels to grab.
+	 * @param height the height of the screen in pixels to grab.
 	 */
 	public void copyBufferToCurrentTexture2D(OGLTexture texture, int texlevel, int xoffset, int yoffset, int srcX, int srcY, int width, int height)
 	{
@@ -1436,6 +1452,19 @@ public class OGLGraphics
 	public void unsetTexture2D()
 	{
 		gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+	}
+
+	/**
+	 * Sets the 2D multisample texture object to the current active texture unit.
+	 * @param format the internal format.
+	 * @param width the texture width in texels.
+	 * @param height the texture height in texels.
+	 * @param samples the number of samples per pixel.
+	 * @param fixedSampleLocations if true, the positions of the samples do not change over the texture.
+	 */
+	public void setTextureMultisample2D(TextureFormat format, int width, int height, int samples, boolean fixedSampleLocations)
+	{
+		gl.glTexImage2DMultisample(GL3.GL_TEXTURE_2D_MULTISAMPLE, samples, format.getGLValue(), width, height, fixedSampleLocations);
 	}
 
 	/**
@@ -1481,13 +1510,14 @@ public class OGLGraphics
 	 * Sends a texture into OpenGL's memory for the current CubeMap texture.
 	 * @param face the cube face to set.
 	 * @param imageData the BGRA image to send.
+	 * @param texlevel the mipmapping level to copy this into (0 is normal, no mipmapping).
 	 * @param format the internal format.
 	 * @param width the texture width in texels.
 	 * @param height the texture height in texels.
 	 * @param border the texel border to add, if any.
 	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
-	public void setTextureDataCube(TextureCubeFace face, Buffer imageData, TextureFormat format, int width, int height, int border)
+	public void setTextureDataCube(TextureCubeFace face, Buffer imageData, int texlevel, TextureFormat format, int width, int height, int border)
 	{
 		if (width > getMaxTextureSize() || height > getMaxTextureSize())
 			throw new GraphicsException("Texture is too large. Maximum size is "+getMaxTextureSize()+" pixels.");
@@ -1498,7 +1528,7 @@ public class OGLGraphics
 		clearError();
 		gl.glTexImage2D(
 			face.glValue,
-			0,
+			texlevel,
 			format.glid, 
 			width,
 			height,
@@ -1514,13 +1544,14 @@ public class OGLGraphics
 	 * Sends a subset of data to the currently-bound CubeMap texture already in OpenGL's memory.
 	 * @param face the cube face to set.
 	 * @param imageData the BGRA image to send.
+	 * @param texlevel the mipmapping level to copy this into (0 is normal, no mipmapping).
 	 * @param width the texture width in texels.
 	 * @param height the texture height in texels.
 	 * @param xoffs the texel offset.
 	 * @param yoffs the texel offset.
 	 * @throws GraphicsException if the buffer provided is not direct.
 	 */
-	public void setTextureSubDataCube(TextureCubeFace face, Buffer imageData, int width, int height, int xoffs, int yoffs)
+	public void setTextureSubDataCube(TextureCubeFace face, Buffer imageData, int texlevel, int width, int height, int xoffs, int yoffs)
 	{
 		if (!imageData.isDirect())
 			throw new GraphicsException("Data must be a direct buffer."); 
@@ -1528,7 +1559,7 @@ public class OGLGraphics
 		clearError();
 		gl.glTexSubImage2D(
 			face.glValue,
-			0,
+			texlevel,
 			xoffs,
 			yoffs,
 			width,
@@ -1738,6 +1769,33 @@ public class OGLGraphics
 	public void setShaderUniformVec4(int locationId, float value0, float value1, float value2, float value3)
 	{
 		gl.glUniform4fv(locationId, 1, new float[]{value0, value1, value2, value3}, 0);
+	}
+	
+	/**
+	 * Sets a uniform value on the currently bound shader.
+	 * @param locationId the uniform location.
+	 * @param matrix the matrix value.
+	 */
+	public void setShaderUniformMatrix(int locationId, Matrix4F matrix)
+	{
+		// Don't transpose - Matrix4Fs are column-major.
+		gl.glUniformMatrix4fv(locationId, 1, false, matrix.getArray(), 0);
+	}
+	
+	/**
+	 * Sets a uniform value on the currently bound shader.
+	 * @param locationId the uniform location.
+	 * @param matrices the array of matrices.
+	 */
+	public void setShaderUniformMatrix(int locationId, Matrix4F[] matrices)
+	{
+		Cache cache = getCache();
+		cache.floatsize(16 * matrices.length);
+		for (int i = 0; i < matrices.length; i++)
+			matrices[i].getFloats(cache.floatState, 16 * i);
+			
+		// Don't transpose - Matrix4Fs are column-major.
+		gl.glUniformMatrix4fv(locationId, matrices.length, false, cache.floatState, 0);
 	}
 	
 	/**
@@ -2194,5 +2252,41 @@ public class OGLGraphics
 		gl.glDrawRangeElements(geometryType.glValue, startIndex, endIndex, count, dataType.glValue, 0L);
 		getError();
 	}	
+	
+	private static final String CACHE_NAME = "$$"+Cache.class.getCanonicalName();
+
+	// Get the cache.
+	private Cache getCache()
+	{
+		Cache out;
+		if ((out = (Cache)Common.getLocal(CACHE_NAME)) == null)
+			Common.setLocal(CACHE_NAME, out = new Cache());
+		return out;
+	}
+
+	private static final class Cache
+	{
+		private int[] intState;
+		private float[] floatState;
+
+		private Cache()
+		{
+			intsize(32);
+			floatsize(32);
+		}
+		
+		void intsize(int len)
+		{
+			if (len > intState.length)
+				intState = new int[len];
+		}
+
+		void floatsize(int len)
+		{
+			if (len > floatState.length)
+				floatState = new float[len];
+		}
+		
+	}
 	
 }

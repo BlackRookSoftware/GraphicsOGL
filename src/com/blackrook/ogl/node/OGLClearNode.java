@@ -33,8 +33,6 @@ public class OGLClearNode extends OGLCanvasNodeAdapter
 	private boolean clearColorBuffer;
 	/** Are we clearing the depth buffer in this step? */
 	private boolean clearDepthBuffer;
-	/** Are we clearing the color buffer in this step? */
-	private boolean clearAccumulationBuffer;
 	/** Are we clearing the stencil buffer in this step? */
 	private boolean clearStencilBuffer;
 	
@@ -46,21 +44,19 @@ public class OGLClearNode extends OGLCanvasNodeAdapter
 	 */
 	public OGLClearNode()
 	{
-		this(false, false, false, false);
+		this(false, false, false);
 	}
 
 	/**
 	 * Creates a new OGLClearNode.
 	 * @param color clear the color buffer?
 	 * @param depth clear the depth buffer?
-	 * @param accum clear the accum buffer?
 	 * @param stencil clear the stencil buffer?
 	 */
-	public OGLClearNode(boolean color, boolean depth, boolean accum, boolean stencil)
+	public OGLClearNode(boolean color, boolean depth, boolean stencil)
 	{
 		clearColorBuffer = color;
 		clearDepthBuffer = depth;
-		clearAccumulationBuffer = accum;
 		clearStencilBuffer = stencil;
 		clearRed = 0f;
 		clearGreen = 0f;
@@ -77,8 +73,7 @@ public class OGLClearNode extends OGLCanvasNodeAdapter
 			g.setClearColor(clearRed, clearGreen, clearBlue, clearAlpha);
 		if (clearDepthBuffer)
 			g.setDepthClear(depthValue);
-		g.clearFrameBuffers(clearColorBuffer, clearDepthBuffer, 
-				clearAccumulationBuffer, clearStencilBuffer);
+		g.clearFrameBuffers(clearColorBuffer, clearDepthBuffer, clearStencilBuffer);
 		renderTimeNanos = System.nanoTime() - nanos;
 	}
 	
@@ -167,23 +162,6 @@ public class OGLClearNode extends OGLCanvasNodeAdapter
 	public void setClearDepthBuffer(boolean clearDepthBuffer)
 	{
 		this.clearDepthBuffer = clearDepthBuffer;
-	}
-
-	/**
-	 * Gets if this clears the accumulation buffer.
-	 * @return true if so, false if not.
-	 */
-	public boolean clearsAccumulationBuffer()
-	{
-		return clearAccumulationBuffer;
-	}
-
-	/**
-	 * Sets if this clears the accumulation buffer.
-	 */
-	public void setClearAccumulationBuffer(boolean clearAccumulationBuffer)
-	{
-		this.clearAccumulationBuffer = clearAccumulationBuffer;
 	}
 
 	/**
