@@ -113,6 +113,8 @@ public class OGLGraphics
 	/** Flag for presence of point sprite extension. */
 	private boolean pointSpritesPresent;
 	
+	/** Maximum vertex attributes. */
+	private int maxVertexAttributes;
 	/** Maximum texture units. */
 	private int maxTextureUnits;
 	/** Maximum texture size. */
@@ -291,6 +293,7 @@ public class OGLGraphics
 		pointSmoothingPresent = extensionIsPresent("gl_arb_point_smooth");
 		pointSpritesPresent = extensionIsPresent("gl_arb_point_sprite");
 
+		maxVertexAttributes = getGLInt(GL3.GL_MAX_VERTEX_ATTRIBS);
 		maxTextureUnits = getGLInt(GL3.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
 		maxTextureSize = getGLInt(GL3.GL_MAX_TEXTURE_SIZE);
 		maxTextureBufferSize = getGLInt(GL3.GL_MAX_TEXTURE_BUFFER_SIZE);
@@ -449,7 +452,15 @@ public class OGLGraphics
 	}
 	
 	/**
-	 * Get max texture size in texels.
+	 * Get max vertex attributes.
+	 */
+	public final int getMaxVertexAttributes()
+	{
+		return maxVertexAttributes;
+	}
+	
+	/**
+	 * Get max texture size in a single axis of texels.
 	 */
 	public final int getMaxTextureSize()
 	{
@@ -1247,13 +1258,16 @@ public class OGLGraphics
 	 * @param minFilter the minification filter.
 	 * @param magFilter the magnification filter.
 	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
+	 * @param generateMipMaps if true, this also creates mipmaps for the texture.
 	 */
-	public void setTextureFiltering1D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy)
+	public void setTextureFiltering1D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean generateMipMaps)
 	{
 		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
     	gl.glTexParameteri(GL3.GL_TEXTURE_1D, GL3.GL_TEXTURE_MAG_FILTER, magFilter.glid);
 		gl.glTexParameteri(GL3.GL_TEXTURE_1D, GL3.GL_TEXTURE_MIN_FILTER, minFilter.glid);
 		gl.glTexParameterf(GL3.GL_TEXTURE_1D, GL3.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+		if (generateMipMaps)
+			gl.glGenerateMipmap(GL3.GL_TEXTURE_1D);
 	}
 	
 	/**
@@ -1347,13 +1361,16 @@ public class OGLGraphics
 	 * @param minFilter the minification filter.
 	 * @param magFilter the magnification filter.
 	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
+	 * @param generateMipMaps if true, this also creates mipmaps for the texture.
 	 */
-	public void setTextureFiltering2D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy)
+	public void setTextureFiltering2D(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean generateMipMaps)
 	{
 		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
     	gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, magFilter.glid);
 		gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, minFilter.glid);
 		gl.glTexParameterf(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+		if (generateMipMaps)
+			gl.glGenerateMipmap(GL3.GL_TEXTURE_2D);
 	}
 	
 	/**
@@ -1484,13 +1501,16 @@ public class OGLGraphics
 	 * @param minFilter the minification filter.
 	 * @param magFilter the magnification filter.
 	 * @param anisotropy the anisotropic filtering (2.0 or greater to enable, 1.0 is "off").
+	 * @param generateMipMaps if true, this also creates mipmaps for the texture.
 	 */
-	public void setTextureFilteringCube(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy)
+	public void setTextureFilteringCube(TextureMinFilter minFilter, TextureMagFilter magFilter, float anisotropy, boolean generateMipMaps)
 	{
 		anisotropy = anisotropy < 1.0f ? 1.0f : anisotropy;
     	gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_MAG_FILTER, magFilter.glid);
 		gl.glTexParameteri(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_MIN_FILTER, minFilter.glid);
 		gl.glTexParameterf(GL3.GL_TEXTURE_CUBE_MAP, GL3.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+		if (generateMipMaps)
+			gl.glGenerateMipmap(GL3.GL_TEXTURE_CUBE_MAP);
 	}
 
 	/**
@@ -2207,6 +2227,42 @@ public class OGLGraphics
 
 	// TODO: Add Vertex attrib binders.
 	
+	
+	
+	/**
+	 * Sets if a vertex attribute array binding is active.
+	 * @param attributeIndex the target attribute index. 
+	 * @param enabled if true, enable. if false, disable. 
+	 */
+	public void setVertexAttributeArrayEnabled(int attributeIndex, boolean enabled)
+	{
+		if (enabled)
+			gl.glEnableVertexAttribArray(attributeIndex);
+		else
+			gl.glDisableVertexAttribArray(attributeIndex);
+	}
+
+	/**
+	 * Sets what positions in the current {@link BufferType#GEOMETRY}-bound buffer are used to draw polygonal information:
+	 * This sets the arbitrarily-defined vertex attribute pointers.
+	 * Note that the same buffer can contain all sorts of information, not just vertex locations.
+	 * @param attributeIndex the target attribute index. 
+	 * @param dataType the data type contained in the buffer that will be read (calculates actual sizes of data).
+	 * @param width the width of a full set of significant coordinates (3-dimensional vertices = 3).
+	 * @param stride the distance (in elements) between each vertex.    
+	 * @param offset the offset in each stride where each vertex starts.  
+	 * @see #setBuffer(BufferType, OGLBuffer)
+	 * @see #setVertexAttributeArrayEnabled(int, boolean)   
+	 */
+	public void setBufferPointerVertexAttributes(int attributeIndex, DataType dataType, boolean normalized, int width, int stride, int offset)
+	{
+		if (attributeIndex < 0 || attributeIndex >= maxTextureUnits)
+			throw new GraphicsException("Attribute index exceeds max allowed: "+maxVertexAttributes);
+		gl.glVertexAttribPointer(attributeIndex, width, dataType.glValue, normalized, stride * dataType.size, offset * dataType.size);
+		getError();
+	}
+	
+	
 	/**
 	 * Draws geometry using the current bound, enabled coordinate arrays/buffers as data.
 	 * @param geometryType the geometry type - tells how to interpret the data.
@@ -2245,11 +2301,12 @@ public class OGLGraphics
 	 * @param startIndex the starting index into the {@link BufferType#INDICES}-bound buffer.
 	 * @param endIndex the ending index in the range.
 	 * @param count the amount of element indices to read.
+	 * @param offset the starting offset in the index buffer (in elements).
 	 * @see #setBuffer(BufferType, OGLBuffer)
 	 */
-	public void drawBufferGeometryElementRange(GeometryType geometryType, DataType dataType, int startIndex, int endIndex, int count)
+	public void drawBufferGeometryElementRange(GeometryType geometryType, DataType dataType, int startIndex, int endIndex, int count, int offset)
 	{
-		gl.glDrawRangeElements(geometryType.glValue, startIndex, endIndex, count, dataType.glValue, 0L);
+		gl.glDrawRangeElements(geometryType.glValue, startIndex, endIndex, count, dataType.glValue, dataType.size * offset);
 		getError();
 	}	
 	

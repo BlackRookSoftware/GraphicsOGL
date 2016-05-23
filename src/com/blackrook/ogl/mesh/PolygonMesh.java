@@ -362,20 +362,20 @@ public class PolygonMesh implements OGLMesh
 				int nwidth = (normals != null) ? 3 : 0;
 		
 				if (vertices != null)
-					list.add(OGLGeometryUtils.vertices(3, geometryElementWidth, 0));
+					list.add(OGLGeometryUtils.info(3, geometryElementWidth, 0));
 				if (textureLayers > 0) for (int i = 0; i < textureLayers; i++)
-					list.add(OGLGeometryUtils.texCoords(i, 2, geometryElementWidth, vwidth + (2 * i)));
+					list.add(OGLGeometryUtils.info(2, geometryElementWidth, vwidth + (2 * i)));
 				if (normals != null)
-					list.add(OGLGeometryUtils.normals(geometryElementWidth, vwidth + twidth));
+					list.add(OGLGeometryUtils.info(3, geometryElementWidth, vwidth + twidth));
 				if (colors != null)
-					list.add(OGLGeometryUtils.color(4, geometryElementWidth, vwidth + twidth + nwidth));
+					list.add(OGLGeometryUtils.info(4, geometryElementWidth, vwidth + twidth + nwidth));
 				
 				geometryInfo = new GeometryInfo[list.size()];
 				list.toArray(geometryInfo);
 			}
 		
 			if (geometryBuffer != null)
-				OGLGeometryUtils.drawInterleavedGeometry(g, geometryBuffer, DataType.FLOAT, getGeometryType(), getElementCount(), geometryInfo);
+				OGLGeometryUtils.drawGeometry(g, geometryBuffer, DataType.FLOAT, getGeometryType(), getElementCount(), geometryInfo);
 		}
 
 		/**
