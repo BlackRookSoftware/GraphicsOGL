@@ -117,6 +117,8 @@ public class OGLGraphics
 	
 	/** The current frame rendered. */
 	private long currentFrame;
+	/** The starting millisecond at creation. */
+	private long startMilliseconds;
 	/** The current millisecond at the beginning of the frame. */
 	private long currentMilliseconds;
 	/** The current nanosecond at the beginning of the frame. */
@@ -178,6 +180,7 @@ public class OGLGraphics
 		currentFrame = 0L;
 		currentTimeStepMillis = -1f;
 		currentTimeStepNanos = -1L;
+		startMilliseconds = System.currentTimeMillis();
 	}
 
 	/**
@@ -403,6 +406,14 @@ public class OGLGraphics
 	public long currentTimeMillis()
 	{
 		return currentMilliseconds;
+	}
+
+	/**
+	 * Gets the seconds time from graphics creation, synced to the beginning of the current frame.
+	 */
+	public float currentTime()
+	{
+		return (currentMilliseconds - startMilliseconds) / 1000f;
 	}
 
 	/**
