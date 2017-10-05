@@ -147,7 +147,7 @@ public class NEWTInputAdapter implements MouseListener, KeyListener, OGLInputCon
 	@Override
 	public void mouseWheelMoved(MouseEvent event)
 	{
-		system.sendKeyRelease((int)event.getRotation()[1]);
+		system.sendMouseWheel((int)event.getRotation()[1]);
 	}
 
 	@Override
